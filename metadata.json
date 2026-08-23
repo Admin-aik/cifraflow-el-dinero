@@ -1,0 +1,6 @@
+{
+  "name": "El Viaje del Valor: De la Sal al Bit - Odisea del Dinero 3D",
+  "description": "Juego y simulador financiero 3D con estética '3D Stylized Caricature meets Cyberpunk Neon Gaming' (CifraFlow). Explora las 4 eras del dinero ('El Viaje del Valor: De la Sal al Bit' por ircar rojas) con Kai y Lia, arquetipos Gen-Z (Streamer, Coder, Designer, Barista), acertijos, visión de flujo de caja y gestión de activos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
