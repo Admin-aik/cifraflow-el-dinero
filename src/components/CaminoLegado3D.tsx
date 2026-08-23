@@ -812,14 +812,25 @@ export const CaminoLegado3D: React.FC = () => {
                     style={{ borderColor: bldg.color, boxShadow: `0 0 30px ${bldg.color}25` }}
                   >
                     {/* 3D Image Artwork Preview */}
-                    <div className="relative w-full h-52 bg-slate-950 overflow-hidden">
+                    <div 
+                      onClick={() => {
+                        soundFx.playClick();
+                        openModal(bldg.modalTarget);
+                      }}
+                      className="relative w-full h-52 bg-slate-950 overflow-hidden cursor-pointer group/art"
+                    >
                       <img
                         src={bldgImg}
                         alt={bldg.name}
                         referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover/art:scale-105 transition-transform duration-500"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-black/60" />
+                      <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover/art:opacity-100 transition-opacity flex items-center justify-center">
+                        <div className="px-3.5 py-1.5 rounded-full bg-slate-950/90 text-cyan-300 border border-cyan-400 text-xs font-bold shadow-lg flex items-center gap-1.5">
+                          <span>▶</span> Explorar con Audio
+                        </div>
+                      </div>
 
                       {/* Top Badges */}
                       <div className="absolute top-3 left-3 flex items-center gap-1 px-3 py-1 rounded-full bg-slate-950/80 border border-white/20 text-xs font-bold text-white backdrop-blur-md">

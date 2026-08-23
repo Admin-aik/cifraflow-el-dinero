@@ -137,6 +137,29 @@ export interface BalanceSheetItem {
 
 export type ArchetypeId = 'streamer' | 'coder' | 'designer' | 'barista';
 
+export type GameFlowState = 'login' | 'character_creation' | 'transition' | 'map_gameplay';
+
+export interface StarterRelic {
+  id: string;
+  name: string;
+  icon: string;
+  era: MoneyEra;
+  bonusTitle: string;
+  bonusDescription: string;
+  bonusStat: string;
+}
+
+export interface PlayerProfile {
+  name: string;
+  email?: string;
+  title: string;
+  archetypeId: ArchetypeId;
+  relicId: string;
+  relicName: string;
+  relicIcon: string;
+  createdAt: number;
+}
+
 export interface CharacterArchetype {
   id: ArchetypeId;
   name: string;

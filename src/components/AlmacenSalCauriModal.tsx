@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
+import { narratorEngine } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
 import { 
   X, 
   Sparkles, 
@@ -10,7 +12,10 @@ import {
   DollarSign, 
   Layers, 
   CheckCircle2, 
-  ShieldCheck 
+  ShieldCheck,
+  Headphones,
+  Play,
+  Pause
 } from 'lucide-react';
 
 export const AlmacenSalCauriModal: React.FC = () => {
@@ -25,8 +30,38 @@ export const AlmacenSalCauriModal: React.FC = () => {
   } = useGameStore();
 
   const [saltRations, setSaltRations] = useState(1);
+  const [narratorState, setNarratorState] = useState(narratorEngine.getState());
+
+  useEffect(() => {
+    const unsubscribe = narratorEngine.subscribe(() => {
+      setNarratorState(narratorEngine.getState());
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Auto-play audio when modal opens
+  useEffect(() => {
+    if (activeModal === 'almacen_sal') {
+      narratorEngine.play('era_sal_cauri');
+    }
+  }, [activeModal]);
 
   if (activeModal !== 'almacen_sal' && activeModal !== 'vivero') return null;
+
+  const isNarratingEra2 = narratorState.isSpeaking && narratorState.currentTrack?.id === 'era_sal_cauri';
+
+  const handleToggleNarrate = () => {
+    soundFx.playClick();
+    if (isNarratingEra2) {
+      if (narratorState.isPaused) {
+        narratorEngine.resume();
+      } else {
+        narratorEngine.pause();
+      }
+    } else {
+      narratorEngine.play('era_sal_cauri');
+    }
+  };
 
   return (
     <div id="modal-almacen-sal" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
@@ -35,35 +70,66 @@ export const AlmacenSalCauriModal: React.FC = () => {
         <button
           id="btn-close-almacen-sal"
           onClick={closeModal}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* HEADER */}
-        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-800">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-cyan-400/60 shadow-[0_0_15px_rgba(0,242,254,0.4)] shrink-0 bg-slate-950">
-            <img
-              src={GAME_IMAGES.eras.salCauri}
-              alt="Era de la Sal y el Cauri 3D"
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/40">
-                ERA 2: LA COSTA DE CAURI & EL ALMACÉN DE SAL
-              </span>
-              <span className="text-xs font-mono text-amber-300 bg-slate-800 px-2 py-0.5 rounded">
-                El Primer "Salario" & Valor Portátil
-              </span>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            {/* CLICKABLE 3D ILLUSTRATION WITH NARRATION TRIGGER */}
+            <button
+              onClick={() => {
+                soundFx.playSuccess();
+                narratorEngine.play('era_sal_cauri');
+              }}
+              title="¡Haz clic en la imagen para escuchar la narración en voz viva!"
+              className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-cyan-400 shadow-[0_0_15px_rgba(0,242,254,0.4)] shrink-0 bg-slate-950 group relative cursor-pointer hover:scale-105 transition-transform"
+            >
+              <img
+                src={GAME_IMAGES.eras.salCauri}
+                alt="Era de la Sal y el Cauri 3D"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover group-hover:brightness-110"
+              />
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Play className="w-5 h-5 text-cyan-300 fill-cyan-300 drop-shadow" />
+              </div>
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/40">
+                  ERA 2: LA COSTA DE CAURI & EL ALMACÉN DE SAL
+                </span>
+                <span className="text-xs font-mono text-amber-300 bg-slate-800 px-2 py-0.5 rounded">
+                  El Primer "Salario" & Valor Portátil
+                </span>
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-white mt-1">El Valor de una Cabra en la Palma de tu Mano</h2>
+              <p className="text-xs text-slate-300">
+                Kai y Lia descubren que la sal y las conchas de cauri son portátiles, duraderas y divisibles. ¡Haz clic en la imagen para oír la historia!
+              </p>
             </div>
-            <h2 className="text-xl md:text-2xl font-black text-white mt-1">El Valor de una Cabra en la Palma de tu Mano</h2>
-            <p className="text-xs text-slate-300">
-              Kai y Lia descubren que no necesitan cargar animales pesados: la sal y las conchas de cauri son portátiles, duraderas y divisibles.
-            </p>
           </div>
+
+          {/* Era Narrative Audio Player Button */}
+          <button
+            onClick={handleToggleNarrate}
+            className={`px-3.5 py-2 rounded-2xl border font-bold text-xs flex items-center gap-2 transition-all shadow-lg ${
+              isNarratingEra2
+                ? 'bg-cyan-500 text-slate-950 border-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.4)] animate-pulse'
+                : 'bg-slate-800 hover:bg-slate-700 text-cyan-300 border-cyan-500/40 hover:border-cyan-400'
+            }`}
+            title="Escuchar narración con voz de la Era de la Sal y Cauri"
+          >
+            <Headphones className="w-4 h-4" />
+            <span>
+              {isNarratingEra2 
+                ? (narratorState.isPaused ? '⏸️ Reanudar Audio' : `🎙️ Narrando Era 2 (${narratorState.progressPercent}%)`) 
+                : '🔊 Escuchar Historia de la Era'}
+            </span>
+          </button>
         </div>
 
         {/* COMIC STORY PANEL */}

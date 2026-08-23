@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
+import { narratorEngine } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
 import { 
   X, 
   Sparkles, 
@@ -10,7 +12,11 @@ import {
   Repeat, 
   Hammer, 
   ShoppingBag,
-  Layers
+  Layers,
+  Headphones,
+  Play,
+  Pause,
+  Radio
 } from 'lucide-react';
 
 export const MercadoTruequeModal: React.FC = () => {
@@ -28,8 +34,38 @@ export const MercadoTruequeModal: React.FC = () => {
 
   const [dialogueStep, setDialogueStep] = useState(0);
   const [tradeOffer, setTradeOffer] = useState<'cabra' | 'leche' | 'cobre' | null>(null);
+  const [narratorState, setNarratorState] = useState(narratorEngine.getState());
+
+  useEffect(() => {
+    const unsubscribe = narratorEngine.subscribe(() => {
+      setNarratorState(narratorEngine.getState());
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Auto-play audio when modal opens
+  useEffect(() => {
+    if (activeModal === 'mercado_trueque') {
+      narratorEngine.play('era_trueque');
+    }
+  }, [activeModal]);
 
   if (activeModal !== 'mercado_trueque' && activeModal !== 'carpinteria') return null;
+
+  const isNarratingEra1 = narratorState.isSpeaking && narratorState.currentTrack?.id === 'era_trueque';
+
+  const handleToggleNarrate = () => {
+    soundFx.playClick();
+    if (isNarratingEra1) {
+      if (narratorState.isPaused) {
+        narratorEngine.resume();
+      } else {
+        narratorEngine.pause();
+      }
+    } else {
+      narratorEngine.play('era_trueque');
+    }
+  };
 
   const handleBarterAttempt = () => {
     if (tradeOffer === 'cobre') {
@@ -48,36 +84,69 @@ export const MercadoTruequeModal: React.FC = () => {
         {/* Close button */}
         <button
           id="btn-close-mercado-trueque"
-          onClick={closeModal}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10"
+          onClick={() => {
+            closeModal();
+          }}
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* HEADER */}
-        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-800">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.4)] shrink-0 bg-slate-950">
-            <img
-              src={GAME_IMAGES.eras.trueque}
-              alt="Era del Trueque 3D"
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-950 text-amber-400 border border-amber-500/40">
-                ERA 1: EL MERCADO ANCESTRAL
-              </span>
-              <span className="text-xs font-mono text-cyan-300 bg-slate-800 px-2 py-0.5 rounded">
-                La Doble Coincidencia de Necesidades
-              </span>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            {/* CLICKABLE 3D ILLUSTRATION WITH NARRATION TRIGGER */}
+            <button
+              onClick={() => {
+                soundFx.playSuccess();
+                narratorEngine.play('era_trueque');
+              }}
+              title="¡Haz clic en la imagen para escuchar la narración en voz viva!"
+              className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.4)] shrink-0 bg-slate-950 group relative cursor-pointer hover:scale-105 transition-transform"
+            >
+              <img
+                src={GAME_IMAGES.eras.trueque}
+                alt="Era del Trueque 3D"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover group-hover:brightness-110"
+              />
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Play className="w-5 h-5 text-amber-300 fill-amber-300 drop-shadow" />
+              </div>
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-950 text-amber-400 border border-amber-500/40">
+                  ERA 1: EL MERCADO ANCESTRAL
+                </span>
+                <span className="text-xs font-mono text-cyan-300 bg-slate-800 px-2 py-0.5 rounded">
+                  La Doble Coincidencia de Necesidades
+                </span>
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-white mt-1">El Dilema de la Cabra Inquieta & El Trigo</h2>
+              <p className="text-xs text-slate-300">
+                Kai y Lia intentan conseguir trigo para sobrevivir. ¡Haz clic en la imagen o escucha la narración en voz viva!
+              </p>
             </div>
-            <h2 className="text-xl md:text-2xl font-black text-white mt-1">El Dilema de la Cabra Inquieta & El Trigo</h2>
-            <p className="text-xs text-slate-300">
-              Kai y Lia intentan conseguir trigo para sobrevivir, pero el mercader no acepta la cabra. ¡Descubre por qué el trueque falla!
-            </p>
           </div>
+
+          {/* Era Narrative Audio Player Button */}
+          <button
+            onClick={handleToggleNarrate}
+            className={`px-3.5 py-2 rounded-2xl border font-bold text-xs flex items-center gap-2 transition-all shadow-lg ${
+              isNarratingEra1
+                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.4)] animate-pulse'
+                : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border-amber-500/40 hover:border-amber-400'
+            }`}
+            title="Escuchar narración con voz de la Era del Trueque"
+          >
+            <Headphones className="w-4 h-4" />
+            <span>
+              {isNarratingEra1 
+                ? (narratorState.isPaused ? '⏸️ Reanudar Audio' : `🎙️ Narrando Era 1 (${narratorState.progressPercent}%)`) 
+                : '🔊 Escuchar Historia de la Era'}
+            </span>
+          </button>
         </div>
 
         {/* COMIC STORY PANEL */}

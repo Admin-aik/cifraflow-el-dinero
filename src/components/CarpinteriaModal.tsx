@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
-import { Hammer, ShoppingBag, X, ArrowRight, Sparkles, Check, DollarSign } from 'lucide-react';
+import { narratorEngine } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
+import { Hammer, ShoppingBag, X, ArrowRight, Sparkles, Check, DollarSign, Play } from 'lucide-react';
 
 export const CarpinteriaModal: React.FC = () => {
   const { 
@@ -14,6 +16,13 @@ export const CarpinteriaModal: React.FC = () => {
     openModal 
   } = useGameStore();
 
+  // Auto-play narration when modal opens
+  useEffect(() => {
+    if (activeModal === 'carpinteria') {
+      narratorEngine.play('carpinteria');
+    }
+  }, [activeModal]);
+
   if (activeModal !== 'carpinteria') return null;
 
   return (
@@ -23,21 +32,31 @@ export const CarpinteriaModal: React.FC = () => {
         <button
           id="btn-close-carpinteria"
           onClick={closeModal}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* Header with 3D Image */}
         <div className="flex items-center gap-3.5 mb-4 pb-4 border-b border-slate-800">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.35)] shrink-0 bg-slate-950 group">
+          <button
+            onClick={() => {
+              soundFx.playSuccess();
+              narratorEngine.play('carpinteria');
+            }}
+            title="¡Haz clic en la imagen para escuchar el taller de Mateo!"
+            className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-amber-400/60 shadow-[0_0_15px_rgba(245,158,11,0.35)] shrink-0 bg-slate-950 group cursor-pointer hover:scale-105 transition-transform relative"
+          >
             <img
               src={GAME_IMAGES.buildings.carpinteria}
               alt="Carpintería de Mateo 3D"
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:brightness-110"
             />
-          </div>
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Play className="w-4 h-4 text-amber-300 fill-amber-300 drop-shadow" />
+            </div>
+          </button>
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-950/80 text-amber-400 border border-amber-500/40">

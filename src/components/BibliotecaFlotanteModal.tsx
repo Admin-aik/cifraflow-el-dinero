@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
+import { narratorEngine, NARRATION_STORIES } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
 import { 
   BookOpen, 
   X, 
@@ -10,11 +12,19 @@ import {
   CheckCircle2, 
   HelpCircle, 
   Award, 
-  Bookmark 
+  Bookmark,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  Square,
+  Headphones,
+  Radio
 } from 'lucide-react';
 
 interface BookPage {
   pageNumber: number;
+  trackKey: string;
   title: string;
   eraBadge: string;
   characters: string;
@@ -29,6 +39,7 @@ interface BookPage {
 const BOOK_PAGES: BookPage[] = [
   {
     pageNumber: 1,
+    trackKey: 'portada',
     title: 'Portada: El Viaje del Valor: De la Sal al Bit',
     eraBadge: 'Obra Original de ircar rojas',
     characters: 'Kai (Visor Azul y Brazalete Cuántico) & Lia (Coleta y Brazalete Neón)',
@@ -45,6 +56,7 @@ const BOOK_PAGES: BookPage[] = [
   },
   {
     pageNumber: 2,
+    trackKey: 'era_trueque',
     title: 'Página 1: El Mercado del Trueque & La Doble Coincidencia',
     eraBadge: 'Era 1: El Trueque Antiguo',
     characters: 'Kai, Lia, la cabra inquieta marrón y el mercader de grano',
@@ -61,6 +73,7 @@ const BOOK_PAGES: BookPage[] = [
   },
   {
     pageNumber: 3,
+    trackKey: 'era_sal_cauri',
     title: 'Página 2: Las Conchas de Cauri & El Primer Salario',
     eraBadge: 'Era 2: El Dinero Mercancía',
     characters: 'Lia con conchas de cauri brillantes y Kai con saquito de sal',
@@ -77,6 +90,7 @@ const BOOK_PAGES: BookPage[] = [
   },
   {
     pageNumber: 4,
+    trackKey: 'era_forja_lidia',
     title: 'Página 3: La Forja de Lidia & El Sello del León',
     eraBadge: 'Era 3: La Moneda Acuñada',
     characters: 'El artesano Dario (45 años, herrero de Lidia) y Kai',
@@ -93,6 +107,7 @@ const BOOK_PAGES: BookPage[] = [
   },
   {
     pageNumber: 5,
+    trackKey: 'era_red_digital',
     title: 'Página 4: La Red Invisible & Del Papel al Bit',
     eraBadge: 'Era 4: El Ciberespacio & Blockchain',
     characters: 'Kai y Lia en el ciberespacio con pantallas flotantes de datos',
@@ -112,21 +127,58 @@ const BOOK_PAGES: BookPage[] = [
 export const BibliotecaFlotanteModal: React.FC = () => {
   const { activeModal, closeModal, unlockEraWisdom } = useGameStore();
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [narratorState, setNarratorState] = useState(narratorEngine.getState());
+
+  useEffect(() => {
+    const unsubscribe = narratorEngine.subscribe(() => {
+      setNarratorState(narratorEngine.getState());
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Auto-play narration when modal opens or page changes
+  useEffect(() => {
+    if (activeModal === 'biblioteca') {
+      const currentPage = BOOK_PAGES[currentPageIndex];
+      narratorEngine.play(currentPage.trackKey);
+    }
+  }, [activeModal, currentPageIndex]);
 
   if (activeModal !== 'biblioteca') return null;
 
   const page = BOOK_PAGES[currentPageIndex];
+  const isNarratingThisPage = narratorState.isSpeaking && narratorState.currentTrack?.id === page.trackKey;
 
   const handleNext = () => {
     if (currentPageIndex < BOOK_PAGES.length - 1) {
+      soundFx.playClick();
       setCurrentPageIndex(prev => prev + 1);
     }
   };
 
   const handlePrev = () => {
     if (currentPageIndex > 0) {
+      soundFx.playClick();
       setCurrentPageIndex(prev => prev - 1);
     }
+  };
+
+  const handleToggleNarratePage = () => {
+    soundFx.playClick();
+    if (isNarratingThisPage) {
+      if (narratorState.isPaused) {
+        narratorEngine.resume();
+      } else {
+        narratorEngine.pause();
+      }
+    } else {
+      narratorEngine.play(page.trackKey);
+    }
+  };
+
+  const handlePlayCompleteAudiobook = () => {
+    soundFx.playClick();
+    narratorEngine.play('historia_completa');
   };
 
   return (
@@ -135,8 +187,10 @@ export const BibliotecaFlotanteModal: React.FC = () => {
         {/* Close Button */}
         <button
           id="btn-close-biblioteca"
-          onClick={closeModal}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10"
+          onClick={() => {
+            closeModal();
+          }}
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
@@ -144,18 +198,28 @@ export const BibliotecaFlotanteModal: React.FC = () => {
         {/* HEADER */}
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl overflow-hidden border border-cyan-400/60 shadow-[0_0_15px_rgba(0,242,254,0.3)] shrink-0 bg-slate-950">
+            <button
+              onClick={() => {
+                soundFx.playSuccess();
+                narratorEngine.play(page.trackKey);
+              }}
+              title="¡Haz clic para reproducir la narración con voz viva!"
+              className="w-12 h-12 rounded-2xl overflow-hidden border border-cyan-400/60 shadow-[0_0_15px_rgba(0,242,254,0.3)] shrink-0 bg-slate-950 cursor-pointer hover:scale-105 transition-transform group relative"
+            >
               <img
                 src={page.image}
                 alt={page.title}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:brightness-110"
               />
-            </div>
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Play className="w-4 h-4 text-cyan-300 fill-cyan-300 drop-shadow" />
+              </div>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/40">
-                  LIBRO ILUSTRADO DIGITAL
+                  LIBRO & AUDIOLIBRO DIGITAL
                 </span>
                 <span className="text-xs font-mono text-amber-300 bg-slate-800 px-2 py-0.5 rounded">
                   Página {page.pageNumber} de {BOOK_PAGES.length}
@@ -173,7 +237,10 @@ export const BibliotecaFlotanteModal: React.FC = () => {
             {BOOK_PAGES.map((p, idx) => (
               <button
                 key={p.pageNumber}
-                onClick={() => setCurrentPageIndex(idx)}
+                onClick={() => {
+                  soundFx.playClick();
+                  setCurrentPageIndex(idx);
+                }}
                 className={`w-9 h-9 rounded-xl font-bold text-xs transition-all flex items-center justify-center overflow-hidden border ${
                   currentPageIndex === idx
                     ? 'border-cyan-400 scale-110 shadow-[0_0_15px_rgba(0,242,254,0.4)]'
@@ -192,6 +259,69 @@ export const BibliotecaFlotanteModal: React.FC = () => {
           </div>
         </div>
 
+        {/* NARRATIVE AUDIO BAR PROMINENT */}
+        <div className="mb-3 p-3 rounded-2xl bg-slate-950 border border-cyan-500/40 flex flex-wrap items-center justify-between gap-3 shadow-inner">
+          <div className="flex items-center gap-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+              isNarratingThisPage
+                ? 'bg-cyan-500 text-slate-950 animate-pulse shadow-md shadow-cyan-500/40'
+                : 'bg-slate-800 text-cyan-400'
+            }`}>
+              <Headphones className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-white">Narración por Voz de Kai & Lia</span>
+                {isNarratingThisPage && (
+                  <span className="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-500/40 text-[10px] font-mono font-bold flex items-center gap-1 animate-pulse">
+                    <Radio className="w-3 h-3 text-cyan-400" /> NARRANDO
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400">
+                {isNarratingThisPage
+                  ? `Reproduciendo audio de la ${page.eraBadge} (${narratorState.progressPercent}%)`
+                  : 'Escucha la historia narrada con ambiente sonoro de la época'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleToggleNarratePage}
+              className="px-3.5 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-cyan-500/30 transition-all hover:scale-105"
+            >
+              {isNarratingThisPage && !narratorState.isPaused ? (
+                <>
+                  <Pause className="w-3.5 h-3.5" /> Pausar Voz
+                </>
+              ) : (
+                <>
+                  <Play className="w-3.5 h-3.5 fill-current" /> Escuchar Página
+                </>
+              )}
+            </button>
+
+            {narratorState.isSpeaking && (
+              <button
+                onClick={() => { soundFx.playClick(); narratorEngine.stop(); }}
+                className="p-2 rounded-xl bg-slate-800 hover:bg-red-500/20 text-red-400 border border-red-500/30 transition-colors"
+                title="Detener Narración"
+              >
+                <Square className="w-3.5 h-3.5 fill-current" />
+              </button>
+            )}
+
+            <button
+              onClick={handlePlayCompleteAudiobook}
+              className="hidden md:flex px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold items-center gap-1.5 transition-all"
+              title="Escuchar toda la historia de corrido"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-cyan-400" /> Audiolibro Completo
+            </button>
+          </div>
+        </div>
+
         {/* MAIN PAGE VIEW */}
         <div className="overflow-y-auto pr-1 flex-1 space-y-4">
           {/* BADGE & TITLE */}
@@ -207,19 +337,30 @@ export const BibliotecaFlotanteModal: React.FC = () => {
           {/* TEXT CONTENT & ARTWORK SPLIT */}
           <div className="p-4 md:p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-4">
             <div className="flex flex-col md:flex-row items-start gap-4">
-              {/* 3D Stylized Chapter Illustration Container */}
-              <div className="w-full md:w-48 aspect-square rounded-2xl overflow-hidden border-2 border-cyan-500/40 shadow-lg shrink-0 bg-slate-900 relative group">
+              {/* 3D Stylized Chapter Illustration Container (Click to Narrate) */}
+              <button
+                onClick={() => {
+                  soundFx.playSuccess();
+                  narratorEngine.play(page.trackKey);
+                }}
+                title="¡Haz clic en la ilustración para escuchar la historia de esta era!"
+                className="w-full md:w-48 aspect-square rounded-2xl overflow-hidden border-2 border-cyan-500/40 shadow-lg shrink-0 bg-slate-900 relative group cursor-pointer hover:border-cyan-400 hover:scale-[1.02] transition-all text-left"
+              >
                 <img
                   src={page.image}
                   alt={page.title}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                <div className="absolute bottom-2 left-2 right-2 text-[10px] font-mono text-center font-bold text-cyan-300 bg-slate-950/80 py-1 rounded-lg border border-slate-700/50 backdrop-blur-md">
-                  Arte 3D Estilizado
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-between p-2.5">
+                  <div className="self-end p-1 rounded-full bg-slate-950/80 border border-cyan-400 text-cyan-300 shadow">
+                    <Play className="w-3.5 h-3.5 fill-cyan-400" />
+                  </div>
+                  <div className="text-[10px] font-mono text-center font-bold text-cyan-300 bg-slate-950/80 py-1 rounded-lg border border-slate-700/50 backdrop-blur-md">
+                    ▶ Clic para Escuchar
+                  </div>
                 </div>
-              </div>
+              </button>
 
               <div className="flex-1">
                 <h3 className="text-lg md:text-xl font-bold text-white">{page.title}</h3>

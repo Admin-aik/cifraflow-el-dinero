@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
 import { ARCHETYPES } from '../data/archetypes';
+import { narratorEngine } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -11,7 +13,8 @@ import {
   Sparkles, 
   Activity, 
   Building2, 
-  Info
+  Info,
+  Play
 } from 'lucide-react';
 
 export const BolsaCaracasModal: React.FC = () => {
@@ -28,6 +31,13 @@ export const BolsaCaracasModal: React.FC = () => {
   const [selectedTicker, setSelectedTicker] = useState<string>('RST');
   const [tradeQuantity, setTradeQuantity] = useState<number>(5);
 
+  // Auto-play narration on modal open
+  useEffect(() => {
+    if (activeModal === 'bolsa') {
+      narratorEngine.play('bolsa');
+    }
+  }, [activeModal]);
+
   if (activeModal !== 'bolsa') return null;
 
   const currentArchetype = ARCHETYPES.find(a => a.id === archetypeId) || ARCHETYPES[0];
@@ -42,7 +52,7 @@ export const BolsaCaracasModal: React.FC = () => {
         <button
           id="btn-close-bolsa"
           onClick={closeModal}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
@@ -50,14 +60,24 @@ export const BolsaCaracasModal: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-cyan-400/60 shadow-[0_0_15px_rgba(0,243,255,0.3)] shrink-0 bg-slate-950 relative group">
+            <button
+              onClick={() => {
+                soundFx.playSuccess();
+                narratorEngine.play('bolsa');
+              }}
+              title="¡Haz clic en la imagen para escuchar la narración de la Bolsa de Valores de Caracas!"
+              className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-cyan-400 shadow-[0_0_15px_rgba(0,243,255,0.3)] shrink-0 bg-slate-950 relative group cursor-pointer hover:scale-105 transition-transform"
+            >
               <img
                 src={GAME_IMAGES.buildings.bolsaCaracas}
                 alt="Piso de Remates BVC 3D"
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                className="w-full h-full object-cover group-hover:brightness-110"
               />
-            </div>
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Play className="w-4 h-4 text-cyan-300 fill-cyan-300 drop-shadow" />
+              </div>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/40">
@@ -69,7 +89,7 @@ export const BolsaCaracasModal: React.FC = () => {
               </div>
               <h2 className="text-xl md:text-2xl font-black text-white mt-1">Bolsa de Valores de Caracas - Terminal de Renta Variable</h2>
               <p className="text-xs text-slate-300">
-                Operador: <span className="text-cyan-400 font-bold">{currentArchetype.name} ({currentArchetype.role})</span> • Invierte en empresas venezolanas y recibe dividendos continuos.
+                Operador: <span className="text-cyan-400 font-bold">{currentArchetype.name} ({currentArchetype.role})</span> • Haz clic en la imagen para escuchar la explicación bursátil.
               </p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { CharacterArchetype } from '../types';
+import { CharacterArchetype, StarterRelic } from '../types';
 import streamerImg from '../assets/images/teen_streamer_gaming_1787494304798.jpg';
 import coderImg from '../assets/images/teen_coder_gaming_1787494317270.jpg';
 import designerImg from '../assets/images/teen_designer_gaming_1787494329065.jpg';
@@ -6,6 +6,54 @@ import baristaImg from '../assets/images/teen_barista_gaming_1787494350744.jpg';
 import cifraflowLogoImg from '../assets/images/cifraflow_infinity_logo_1787494363682.jpg';
 
 export const CIFRAFLOW_LOGO = cifraflowLogoImg;
+
+export const PLAYER_TITLES = [
+  'Viajero del Tiempo Cuántico',
+  'Buscador de Valor Ancestral',
+  'Alquimista Digital del Flujo',
+  'Navegante de la Sal & Cauri',
+  'Forjador del León de Lidia',
+  'Arquitecto de Blockchain'
+];
+
+export const STARTER_RELICS: StarterRelic[] = [
+  {
+    id: 'cencerro_cabra',
+    name: 'Cencerro de la Cabra Ancestral',
+    icon: '🐐',
+    era: 'era_trueque',
+    bonusTitle: 'Facilitador del Trueque',
+    bonusDescription: '+1 Cabra Lechera inicial y +$100 de liquidez de arranque.',
+    bonusStat: '+100 Cash / +1 Cabra'
+  },
+  {
+    id: 'frasco_sal',
+    name: 'Saquito de Sal Marina Pura',
+    icon: '🧂',
+    era: 'era_sal_cauri',
+    bonusTitle: 'Primer Salario Portátil',
+    bonusDescription: '+5 Saquitos de Sal procesada y +10 Conchas de Cauri negociables.',
+    bonusStat: '+5 Sal / +10 Cauri'
+  },
+  {
+    id: 'sello_leon',
+    name: 'Matriz Real del León de Lidia',
+    icon: '🦁',
+    era: 'era_forja_lidia',
+    bonusTitle: 'Garantía Real de Confianza',
+    bonusDescription: '+2 Monedas de Electro acuñadas y +100 Puntos de Prestigio.',
+    bonusStat: '+2 Monedas / +100 Prestigio'
+  },
+  {
+    id: 'chip_cuantico',
+    name: 'Chip Cuántico Descentralizado',
+    icon: '⚡',
+    era: 'era_bit_digital',
+    bonusTitle: 'Información en Tiempo Real',
+    bonusDescription: '+4 Bits Digitales minados y +$15/tick de flujo pasivo constante.',
+    bonusStat: '+4 Bits / +$15 Flujo'
+  }
+];
 
 export const ARCHETYPES: CharacterArchetype[] = [
   {

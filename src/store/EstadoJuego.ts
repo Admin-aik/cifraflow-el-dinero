@@ -12,7 +12,8 @@ import {
   VillainThreat,
   BalanceSheetItem,
   BarterItem,
-  ArchetypeId
+  ArchetypeId,
+  GameFlowState
 } from '../types';
 import { soundFx } from '../utils/audio';
 
@@ -424,6 +425,14 @@ export const INITIAL_VILLAINS: VillainThreat[] = [
 ];
 
 interface GameState {
+  // Game Flow State: Login -> Character Creation -> Transition -> Map Gameplay
+  gameFlowState: GameFlowState;
+  isLoggedIn: boolean;
+  playerName: string;
+  playerEmail: string;
+  playerTitle: string;
+  selectedRelic: string;
+
   // Player stats
   cash: number;
   monthlyPassiveIncome: number;
@@ -462,7 +471,14 @@ interface GameState {
   villains: VillainThreat[];
   balanceItems: BalanceSheetItem[];
 
-  // Actions
+  // Navigation & Flow Actions
+  setLoginData: (name: string, email?: string) => void;
+  completeCharacterCreation: (data: { archetypeId: ArchetypeId; playerName: string; playerTitle: string; selectedRelic: string }) => void;
+  startMapGameplay: () => void;
+  goToLogin: () => void;
+  goToCharacterCreation: () => void;
+
+  // In-Game Actions
   toggleFlowVision: () => void;
   openModal: (modalId: string) => void;
   closeModal: () => void;
@@ -503,6 +519,14 @@ interface GameState {
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
+  // Flow State
+  gameFlowState: 'login',
+  isLoggedIn: false,
+  playerName: 'Ircar Rojas',
+  playerEmail: 'rojasircar@gmail.com',
+  playerTitle: 'Viajero del Tiempo Cuántico',
+  selectedRelic: 'cencerro_cabra',
+
   cash: 250,
   monthlyPassiveIncome: 25,
   monthlyExpenses: 15,
@@ -560,6 +584,94 @@ export const useGameStore = create<GameState>((set, get) => ({
   ],
   villains: INITIAL_VILLAINS,
   balanceItems: INITIAL_BALANCE_ITEMS,
+
+  // --- FLOW TRANSITION ACTIONS ---
+  setLoginData: (name: string, email?: string) => {
+    soundFx.playPowerUp();
+    set({
+      playerName: name.trim() || 'Viajero del Tiempo',
+      playerEmail: email?.trim() || '',
+      isLoggedIn: true,
+      gameFlowState: 'character_creation',
+      notification: {
+        title: '¡Identificación Exitosa!',
+        message: `Bienvenido a la Cámara Temporal, ${name || 'Viajero'}. Elige y forja tu personaje.`,
+        type: 'success'
+      }
+    });
+  },
+
+  completeCharacterCreation: (data) => {
+    soundFx.playSuccess();
+    const { archetypeId, playerName, playerTitle, selectedRelic } = data;
+
+    // Apply specific starter relic benefits
+    let bonusCash = 0;
+    let bonusGoats = 0;
+    let bonusSalt = 0;
+    let bonusCowrie = 0;
+    let bonusElectrum = 0;
+    let bonusBits = 0;
+    let bonusPrestige = 0;
+    let bonusPassive = 0;
+
+    if (selectedRelic === 'cencerro_cabra') {
+      bonusCash = 100;
+      bonusGoats = 1;
+    } else if (selectedRelic === 'frasco_sal') {
+      bonusSalt = 5;
+      bonusCowrie = 10;
+    } else if (selectedRelic === 'sello_leon') {
+      bonusElectrum = 2;
+      bonusPrestige = 100;
+    } else if (selectedRelic === 'chip_cuantico') {
+      bonusBits = 4;
+      bonusPassive = 15;
+    }
+
+    set(prev => ({
+      archetypeId,
+      playerName: playerName.trim() || prev.playerName,
+      playerTitle: playerTitle.trim() || prev.playerTitle,
+      selectedRelic,
+      cash: prev.cash + bonusCash,
+      goatsCount: prev.goatsCount + bonusGoats,
+      saltSacksCount: prev.saltSacksCount + bonusSalt,
+      cowrieShellsCount: prev.cowrieShellsCount + bonusCowrie,
+      electrumCoinsCount: prev.electrumCoinsCount + bonusElectrum,
+      digitalBitsCount: prev.digitalBitsCount + bonusBits,
+      prestigePoints: prev.prestigePoints + bonusPrestige,
+      monthlyPassiveIncome: prev.monthlyPassiveIncome + bonusPassive,
+      gameFlowState: 'transition',
+      notification: {
+        title: '¡Personaje Forjado!',
+        message: `${playerName}, has forjado tu identidad como ${playerTitle}. ¡Iniciando salto al Mapa de las Eras!`,
+        type: 'achievement'
+      }
+    }));
+  },
+
+  startMapGameplay: () => {
+    soundFx.playPowerUp();
+    set({
+      gameFlowState: 'map_gameplay',
+      activeModal: null
+    });
+  },
+
+  goToLogin: () => {
+    soundFx.playClick();
+    set({
+      gameFlowState: 'login'
+    });
+  },
+
+  goToCharacterCreation: () => {
+    soundFx.playClick();
+    set({
+      gameFlowState: 'character_creation'
+    });
+  },
 
   toggleFlowVision: () => {
     soundFx.playPowerUp();
@@ -1230,6 +1342,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   resetGame: () => {
     set({
+      gameFlowState: 'login',
+      isLoggedIn: false,
       cash: 250,
       monthlyPassiveIncome: 25,
       monthlyExpenses: 15,

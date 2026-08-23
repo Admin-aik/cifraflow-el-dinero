@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
-import { Sparkles, Award, TrendingUp, X, CheckCircle2, BookOpen, ShieldCheck } from 'lucide-react';
+import { narratorEngine } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
+import { Sparkles, Award, TrendingUp, X, CheckCircle2, BookOpen, ShieldCheck, Headphones, Play, Pause } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const LetreroMensajeModal: React.FC = () => {
@@ -13,6 +15,15 @@ export const LetreroMensajeModal: React.FC = () => {
     activeModal,
     closeModal 
   } = useGameStore();
+
+  const [narratorState, setNarratorState] = useState(narratorEngine.getState());
+
+  useEffect(() => {
+    const unsubscribe = narratorEngine.subscribe(() => {
+      setNarratorState(narratorEngine.getState());
+    });
+    return () => unsubscribe();
+  }, []);
 
   if (activeModal !== 'dynasty' && !selectedDynastyId) return null;
 
@@ -26,6 +37,32 @@ export const LetreroMensajeModal: React.FC = () => {
       case 'era_forja_lidia': return GAME_IMAGES.eras.forjaLidia;
       case 'era_bit_digital': return GAME_IMAGES.eras.bitBlockchain;
       default: return GAME_IMAGES.eras.trueque;
+    }
+  };
+
+  const getTrackId = (id: string) => {
+    switch (id) {
+      case 'era_trueque': return 'era_trueque';
+      case 'era_sal_cauri': return 'era_sal_cauri';
+      case 'era_forja_lidia': return 'era_forja_lidia';
+      case 'era_bit_digital': return 'era_red_digital';
+      default: return 'era_trueque';
+    }
+  };
+
+  const trackId = getTrackId(era.id);
+  const isPlayingThisEra = narratorState.isSpeaking && narratorState.currentTrack?.id === trackId;
+
+  const handleToggleNarrate = () => {
+    soundFx.playClick();
+    if (isPlayingThisEra) {
+      if (narratorState.isPaused) {
+        narratorEngine.resume();
+      } else {
+        narratorEngine.pause();
+      }
+    } else {
+      narratorEngine.play(trackId);
     }
   };
 
@@ -67,34 +104,51 @@ export const LetreroMensajeModal: React.FC = () => {
         </button>
 
         {/* Header with 3D Era Artwork */}
-        <div className="flex items-start gap-4 mb-5">
-          <div 
-            className="w-16 h-16 rounded-2xl overflow-hidden border-2 shadow-inner shrink-0 bg-slate-950 group"
-            style={{ borderColor: era.color }}
-          >
-            <img
-              src={eraImage}
-              alt={era.title}
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-slate-800 text-cyan-300 font-bold border border-slate-700">
-                {era.title}
-              </span>
-              <span className="text-xs text-slate-400 font-medium">
-                {era.characters}
-              </span>
+        <div className="flex items-start justify-between gap-4 mb-5">
+          <div className="flex items-start gap-4">
+            <div 
+              className="w-16 h-16 rounded-2xl overflow-hidden border-2 shadow-inner shrink-0 bg-slate-950 group"
+              style={{ borderColor: era.color }}
+            >
+              <img
+                src={eraImage}
+                alt={era.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              />
             </div>
-            <h2 className="text-xl md:text-2xl font-black text-white mt-1 tracking-tight">
-              {era.subtitle}
-            </h2>
-            <p className="text-xs text-slate-300 italic mt-0.5">
-              Concepto Clave: {era.coreConcept}
-            </p>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono px-2.5 py-0.5 rounded-full bg-slate-800 text-cyan-300 font-bold border border-slate-700">
+                  {era.title}
+                </span>
+                <span className="text-xs text-slate-400 font-medium">
+                  {era.characters}
+                </span>
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-white mt-1 tracking-tight">
+                {era.subtitle}
+              </h2>
+              <p className="text-xs text-slate-300 italic mt-0.5">
+                Concepto Clave: {era.coreConcept}
+              </p>
+            </div>
           </div>
+
+          <button
+            onClick={handleToggleNarrate}
+            className={`p-2.5 rounded-2xl border flex items-center gap-1.5 text-xs font-bold transition-all shadow-md shrink-0 ${
+              isPlayingThisEra
+                ? 'bg-cyan-500 text-slate-950 border-cyan-300 animate-pulse'
+                : 'bg-slate-800 hover:bg-slate-700 text-cyan-300 border-slate-700'
+            }`}
+            title="Escuchar audio narrativo de esta Era"
+          >
+            <Headphones className="w-4 h-4" />
+            <span className="hidden sm:inline">
+              {isPlayingThisEra ? 'Narrando' : 'Voz'}
+            </span>
+          </button>
         </div>
 
         {/* Quote from the Book */}

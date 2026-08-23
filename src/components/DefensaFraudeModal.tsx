@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
+import { narratorEngine } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
 import { 
   ShieldAlert, 
   X, 
@@ -11,7 +13,8 @@ import {
   AlertTriangle, 
   CheckCircle2, 
   Award,
-  DollarSign
+  DollarSign,
+  Play
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -22,6 +25,13 @@ export const DefensaFraudeModal: React.FC = () => {
     villains, 
     attackVillain 
   } = useGameStore();
+
+  // Auto-play audio when modal opens
+  useEffect(() => {
+    if (activeModal === 'defensa') {
+      narratorEngine.play('defensa');
+    }
+  }, [activeModal]);
 
   if (activeModal !== 'defensa') return null;
 
@@ -48,21 +58,31 @@ export const DefensaFraudeModal: React.FC = () => {
         <button
           id="btn-close-defensa"
           onClick={closeModal}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-800">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-rose-500/60 shadow-[0_0_15px_rgba(244,63,94,0.4)] shrink-0 bg-slate-950">
+          <button
+            onClick={() => {
+              soundFx.playSuccess();
+              narratorEngine.play('defensa');
+            }}
+            title="¡Haz clic en la imagen para escuchar la alerta de ciberseguridad!"
+            className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-rose-500/60 shadow-[0_0_15px_rgba(244,63,94,0.4)] shrink-0 bg-slate-950 relative group cursor-pointer hover:scale-105 transition-transform"
+          >
             <img
               src={currentVillainImage}
               alt={currentVillain.name}
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:brightness-110"
             />
-          </div>
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Play className="w-4 h-4 text-rose-300 fill-rose-300 drop-shadow" />
+            </div>
+          </button>
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-fuchsia-950 text-fuchsia-400 border border-fuchsia-500/40">

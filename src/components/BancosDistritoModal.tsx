@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
+import { narratorEngine } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
 import { 
   Building2, 
   X, 
@@ -12,7 +14,9 @@ import {
   AlertTriangle,
   CreditCard,
   Lock,
-  Sparkles
+  Sparkles,
+  Headphones,
+  Play
 } from 'lucide-react';
 
 export const BancosDistritoModal: React.FC = () => {
@@ -34,6 +38,13 @@ export const BancosDistritoModal: React.FC = () => {
   const [withdrawAmount, setWithdrawAmount] = useState<number>(50);
   const [loanAmount, setLoanAmount] = useState<number>(200);
 
+  // Auto-play audio when modal opens
+  useEffect(() => {
+    if (activeModal === 'bancos') {
+      narratorEngine.play('bancos');
+    }
+  }, [activeModal]);
+
   if (activeModal !== 'bancos') return null;
 
   // Active bank selection (default to BDV if none selected)
@@ -50,7 +61,7 @@ export const BancosDistritoModal: React.FC = () => {
         <button
           id="btn-close-bancos"
           onClick={closeModal}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
@@ -61,7 +72,7 @@ export const BancosDistritoModal: React.FC = () => {
             <button
               key={b.id}
               onClick={() => setSelectedBank(b.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 border cursor-pointer ${
                 currentBank.id === b.id 
                   ? 'text-white shadow-lg scale-105' 
                   : 'bg-slate-950/60 text-slate-400 border-slate-800 hover:border-slate-700'
@@ -81,20 +92,30 @@ export const BancosDistritoModal: React.FC = () => {
         {/* BANK HEADER WITH 3D IMAGE */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
           <div className="flex items-center gap-3.5">
-            <div className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-cyan-400/50 shadow-md shrink-0 bg-slate-950 group">
+            <button
+              onClick={() => {
+                soundFx.playSuccess();
+                narratorEngine.play('bancos');
+              }}
+              title="¡Haz clic en la imagen para escuchar la guía sonora del Distrito Bancario!"
+              className="relative w-16 h-16 rounded-2xl overflow-hidden border-2 border-cyan-400 shadow-md shrink-0 bg-slate-950 group cursor-pointer hover:scale-105 transition-transform"
+            >
               <img
                 src={GAME_IMAGES.buildings.bancoCentral}
                 alt="Distrito Bancario 3D"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Play className="w-4 h-4 text-cyan-300 fill-cyan-300 drop-shadow" />
+              </div>
               <div 
                 className="absolute bottom-1 right-1 px-1 rounded text-[10px] font-black text-white"
                 style={{ backgroundColor: currentBank.color }}
               >
                 {currentBank.badge}
               </div>
-            </div>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] uppercase font-bold text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30 flex items-center gap-1">

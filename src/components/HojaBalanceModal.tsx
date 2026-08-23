@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
+import { narratorEngine } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
 import { 
   Scale, 
   X, 
@@ -10,7 +12,8 @@ import {
   AlertCircle, 
   HelpCircle,
   TrendingUp,
-  ShieldAlert
+  ShieldAlert,
+  Play
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -23,6 +26,13 @@ export const HojaBalanceModal: React.FC = () => {
     verifyBalanceSheet,
     quests
   } = useGameStore();
+
+  // Auto-play audio when modal opens
+  useEffect(() => {
+    if (activeModal === 'vivero') {
+      narratorEngine.play('vivero');
+    }
+  }, [activeModal]);
 
   if (activeModal !== 'vivero') return null;
 
@@ -68,21 +78,31 @@ export const HojaBalanceModal: React.FC = () => {
         <button
           id="btn-close-balance"
           onClick={closeModal}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* Header with 3D Mentor Avatar */}
         <div className="flex items-center gap-3.5 mb-4 pb-4 border-b border-slate-800">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-emerald-400/60 shadow-[0_0_15px_rgba(0,255,170,0.3)] shrink-0 bg-slate-950 group">
+          <button
+            onClick={() => {
+              soundFx.playSuccess();
+              narratorEngine.play('vivero');
+            }}
+            title="¡Haz clic en la imagen para escuchar la lección de la Hoja de Balance!"
+            className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-emerald-400/60 shadow-[0_0_15px_rgba(0,255,170,0.3)] shrink-0 bg-slate-950 group cursor-pointer hover:scale-105 transition-transform relative"
+          >
             <img
               src={GAME_IMAGES.mentors}
               alt="Academia Contable Kai y Lia"
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:brightness-110"
             />
-          </div>
+            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Play className="w-4 h-4 text-emerald-300 fill-emerald-300 drop-shadow" />
+            </div>
+          </button>
           <div>
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-950 text-emerald-400 border border-emerald-500/40">

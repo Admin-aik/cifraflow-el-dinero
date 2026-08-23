@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
+import { narratorEngine } from '../utils/narrator';
+import { soundFx } from '../utils/audio';
 import { 
   X, 
   Sparkles, 
@@ -11,7 +13,10 @@ import {
   CheckCircle2, 
   ShieldAlert, 
   Terminal, 
-  Layers 
+  Layers,
+  Headphones,
+  Play,
+  Pause
 } from 'lucide-react';
 
 export const RedDigitalBitModal: React.FC = () => {
@@ -25,8 +30,38 @@ export const RedDigitalBitModal: React.FC = () => {
   } = useGameStore();
 
   const [isMining, setIsMining] = useState(false);
+  const [narratorState, setNarratorState] = useState(narratorEngine.getState());
+
+  useEffect(() => {
+    const unsubscribe = narratorEngine.subscribe(() => {
+      setNarratorState(narratorEngine.getState());
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Auto-play audio when modal opens
+  useEffect(() => {
+    if (activeModal === 'red_digital') {
+      narratorEngine.play('era_red_digital');
+    }
+  }, [activeModal]);
 
   if (activeModal !== 'red_digital' && activeModal !== 'defensa') return null;
+
+  const isNarratingEra4 = narratorState.isSpeaking && narratorState.currentTrack?.id === 'era_red_digital';
+
+  const handleToggleNarrate = () => {
+    soundFx.playClick();
+    if (isNarratingEra4) {
+      if (narratorState.isPaused) {
+        narratorEngine.resume();
+      } else {
+        narratorEngine.pause();
+      }
+    } else {
+      narratorEngine.play('era_red_digital');
+    }
+  };
 
   const handleMine = () => {
     setIsMining(true);
@@ -43,35 +78,66 @@ export const RedDigitalBitModal: React.FC = () => {
         <button
           id="btn-close-red-digital"
           onClick={closeModal}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full transition-colors z-10 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* HEADER */}
-        <div className="flex items-center gap-3 mb-4 pb-4 border-b border-slate-800">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-fuchsia-400/60 shadow-[0_0_15px_rgba(217,70,239,0.4)] shrink-0 bg-slate-950">
-            <img
-              src={GAME_IMAGES.eras.bitBlockchain}
-              alt="Era del Bit y Blockchain 3D"
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-fuchsia-950 text-fuchsia-400 border border-fuchsia-500/40">
-                ERA 4: EL CIBERESPACIO DEL BIT & BLOCKCHAIN
-              </span>
-              <span className="text-xs font-mono text-cyan-300 bg-slate-800 px-2 py-0.5 rounded">
-                Del Papel al Bit: Pura Información
-              </span>
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800">
+          <div className="flex items-center gap-3">
+            {/* CLICKABLE 3D ILLUSTRATION WITH NARRATION TRIGGER */}
+            <button
+              onClick={() => {
+                soundFx.playSuccess();
+                narratorEngine.play('era_red_digital');
+              }}
+              title="¡Haz clic en la imagen para escuchar la narración en voz viva!"
+              className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-fuchsia-400 shadow-[0_0_15px_rgba(217,70,239,0.4)] shrink-0 bg-slate-950 group relative cursor-pointer hover:scale-105 transition-transform"
+            >
+              <img
+                src={GAME_IMAGES.eras.bitBlockchain}
+                alt="Era del Bit y Blockchain 3D"
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover group-hover:brightness-110"
+              />
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Play className="w-5 h-5 text-fuchsia-300 fill-fuchsia-300 drop-shadow" />
+              </div>
+            </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-fuchsia-950 text-fuchsia-400 border border-fuchsia-500/40">
+                  ERA 4: EL CIBERESPACIO DEL BIT & BLOCKCHAIN
+                </span>
+                <span className="text-xs font-mono text-cyan-300 bg-slate-800 px-2 py-0.5 rounded">
+                  Del Papel al Bit: Pura Información
+                </span>
+              </div>
+              <h2 className="text-xl md:text-2xl font-black text-white mt-1">La Red Invisible & La Frontera Digital</h2>
+              <p className="text-xs text-slate-300">
+                El dinero se vuelve código y blockchain. ¡Haz clic en la imagen para oír la historia en voz viva!
+              </p>
             </div>
-            <h2 className="text-xl md:text-2xl font-black text-white mt-1">La Red Invisible & La Frontera Digital</h2>
-            <p className="text-xs text-slate-300">
-              Kai y Lia descubren que el dinero ya no necesita materia física: es código, impulsos eléctricos y confianza compartida en la red.
-            </p>
           </div>
+
+          {/* Era Narrative Audio Player Button */}
+          <button
+            onClick={handleToggleNarrate}
+            className={`px-3.5 py-2 rounded-2xl border font-bold text-xs flex items-center gap-2 transition-all shadow-lg ${
+              isNarratingEra4
+                ? 'bg-fuchsia-500 text-slate-950 border-fuchsia-300 shadow-[0_0_20px_rgba(217,70,239,0.4)] animate-pulse'
+                : 'bg-slate-800 hover:bg-slate-700 text-fuchsia-300 border-fuchsia-500/40 hover:border-fuchsia-400'
+            }`}
+            title="Escuchar narración con voz de la Era del Bit y Blockchain"
+          >
+            <Headphones className="w-4 h-4" />
+            <span>
+              {isNarratingEra4 
+                ? (narratorState.isPaused ? '⏸️ Reanudar Audio' : `🎙️ Narrando Era 4 (${narratorState.progressPercent}%)`) 
+                : '🔊 Escuchar Historia de la Era'}
+            </span>
+          </button>
         </div>
 
         {/* COMIC STORY PANEL */}
