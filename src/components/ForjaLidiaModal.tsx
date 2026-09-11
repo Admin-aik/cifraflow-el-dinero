@@ -39,13 +39,6 @@ export const ForjaLidiaModal: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Auto-play audio when modal opens
-  useEffect(() => {
-    if (activeModal === 'forja_lidia') {
-      narratorEngine.play('era_forja_lidia');
-    }
-  }, [activeModal]);
-
   if (activeModal !== 'forja_lidia' && activeModal !== 'bolsa') return null;
 
   const isNarratingEra3 = narratorState.isSpeaking && narratorState.currentTrack?.id === 'era_forja_lidia';

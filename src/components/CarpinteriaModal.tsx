@@ -16,13 +16,6 @@ export const CarpinteriaModal: React.FC = () => {
     openModal 
   } = useGameStore();
 
-  // Auto-play narration when modal opens
-  useEffect(() => {
-    if (activeModal === 'carpinteria') {
-      narratorEngine.play('carpinteria');
-    }
-  }, [activeModal]);
-
   if (activeModal !== 'carpinteria') return null;
 
   return (

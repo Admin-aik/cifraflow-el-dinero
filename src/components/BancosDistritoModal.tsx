@@ -38,13 +38,6 @@ export const BancosDistritoModal: React.FC = () => {
   const [withdrawAmount, setWithdrawAmount] = useState<number>(50);
   const [loanAmount, setLoanAmount] = useState<number>(200);
 
-  // Auto-play audio when modal opens
-  useEffect(() => {
-    if (activeModal === 'bancos') {
-      narratorEngine.play('bancos');
-    }
-  }, [activeModal]);
-
   if (activeModal !== 'bancos') return null;
 
   // Active bank selection (default to BDV if none selected)

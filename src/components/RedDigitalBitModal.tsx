@@ -39,13 +39,6 @@ export const RedDigitalBitModal: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Auto-play audio when modal opens
-  useEffect(() => {
-    if (activeModal === 'red_digital') {
-      narratorEngine.play('era_red_digital');
-    }
-  }, [activeModal]);
-
   if (activeModal !== 'red_digital' && activeModal !== 'defensa') return null;
 
   const isNarratingEra4 = narratorState.isSpeaking && narratorState.currentTrack?.id === 'era_red_digital';

@@ -43,13 +43,6 @@ export const MercadoTruequeModal: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Auto-play audio when modal opens
-  useEffect(() => {
-    if (activeModal === 'mercado_trueque') {
-      narratorEngine.play('era_trueque');
-    }
-  }, [activeModal]);
-
   if (activeModal !== 'mercado_trueque' && activeModal !== 'carpinteria') return null;
 
   const isNarratingEra1 = narratorState.isSpeaking && narratorState.currentTrack?.id === 'era_trueque';

@@ -27,13 +27,6 @@ export const HojaBalanceModal: React.FC = () => {
     quests
   } = useGameStore();
 
-  // Auto-play audio when modal opens
-  useEffect(() => {
-    if (activeModal === 'vivero') {
-      narratorEngine.play('vivero');
-    }
-  }, [activeModal]);
-
   if (activeModal !== 'vivero') return null;
 
   const balanceSheetSolved = quests.find(q => q.id === 'quest_7_balance_sheet')?.completed || false;

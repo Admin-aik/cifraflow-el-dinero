@@ -31,13 +31,6 @@ export const BolsaCaracasModal: React.FC = () => {
   const [selectedTicker, setSelectedTicker] = useState<string>('RST');
   const [tradeQuantity, setTradeQuantity] = useState<number>(5);
 
-  // Auto-play narration on modal open
-  useEffect(() => {
-    if (activeModal === 'bolsa') {
-      narratorEngine.play('bolsa');
-    }
-  }, [activeModal]);
-
   if (activeModal !== 'bolsa') return null;
 
   const currentArchetype = ARCHETYPES.find(a => a.id === archetypeId) || ARCHETYPES[0];

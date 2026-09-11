@@ -26,13 +26,6 @@ export const DefensaFraudeModal: React.FC = () => {
     attackVillain 
   } = useGameStore();
 
-  // Auto-play audio when modal opens
-  useEffect(() => {
-    if (activeModal === 'defensa') {
-      narratorEngine.play('defensa');
-    }
-  }, [activeModal]);
-
   if (activeModal !== 'defensa') return null;
 
   const currentVillain = villains.find(v => v.active && !v.defeated) || villains[0];

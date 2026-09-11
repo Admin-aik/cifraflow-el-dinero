@@ -20,6 +20,21 @@ class SoundEngine {
     return this.soundEnabled;
   }
 
+  public setMuted(muted: boolean) {
+    this.soundEnabled = !muted;
+    if (this.ctx && muted && this.ctx.state === 'running') {
+      try {
+        this.ctx.suspend();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  public pauseAll() {
+    this.setMuted(true);
+  }
+
   public isMuted(): boolean {
     return !this.soundEnabled;
   }

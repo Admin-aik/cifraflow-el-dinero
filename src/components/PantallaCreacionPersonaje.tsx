@@ -30,7 +30,9 @@ export const PantallaCreacionPersonaje: React.FC = () => {
     archetypeId: storedArchetype, 
     selectedRelic: storedRelic,
     completeCharacterCreation,
-    goToLogin
+    goToLogin,
+    startMapGameplay,
+    isLoggedIn
   } = useGameStore();
 
   const [selectedArchId, setSelectedArchId] = useState<ArchetypeId>(storedArchetype || 'streamer');
@@ -110,22 +112,38 @@ export const PantallaCreacionPersonaje: React.FC = () => {
 
       {/* TOP HEADER & NAVIGATION */}
       <header className="relative z-20 max-w-6xl w-full mx-auto flex items-center justify-between pb-4 border-b border-slate-800">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={goToLogin}
             className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-semibold"
             title="Volver a la pantalla de logeo"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Volver</span>
+            <span className="hidden sm:inline">Logeo</span>
           </button>
+
+          {isLoggedIn && (
+            <button
+              onClick={() => {
+                soundFx.playClick();
+                narratorEngine.stop();
+                startMapGameplay();
+              }}
+              className="p-2 rounded-xl bg-cyan-950/60 border border-cyan-500/50 hover:border-cyan-400 text-cyan-300 hover:text-white transition-all flex items-center gap-1.5 text-xs font-bold shadow-[0_0_12px_rgba(0,242,254,0.25)] hover:scale-105"
+              title="Volver directamente al Mapa de las Eras"
+            >
+              <Compass className="w-4 h-4 text-cyan-400" />
+              <span className="hidden sm:inline">Ir al Mapa</span>
+            </button>
+          )}
+
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base sm:text-lg font-black text-white">
-                Forja de Personaje & Identidad
+                Forja de Personajes & Identidad
               </h1>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-fuchsia-950 text-fuchsia-300 border border-fuchsia-500/40">
-                Paso 2 de 3
+                {isLoggedIn ? 'Ajuste de Arquetipo' : 'Paso 2 de 3'}
               </span>
             </div>
             <p className="text-xs text-slate-400">

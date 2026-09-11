@@ -47,6 +47,15 @@ export const NarradorAudioHUD: React.FC = () => {
     narratorEngine.stop();
   };
 
+  const handlePauseAll = () => {
+    soundFx.playClick();
+    if (state.isAllAudioPaused) {
+      narratorEngine.resumeAll();
+    } else {
+      narratorEngine.pauseAll();
+    }
+  };
+
   const handleSpeedChange = (speed: number) => {
     soundFx.playClick();
     narratorEngine.setSpeechRate(speed);
@@ -149,7 +158,10 @@ export const NarradorAudioHUD: React.FC = () => {
           {/* Reading Progress Bar */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
-              <span>{state.isSpeaking ? 'Leyendo historia en voz alta' : 'Listo para reproducir'}</span>
+              <span className="flex items-center gap-1 truncate max-w-[220px]">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
+                <span className="truncate">{state.selectedVoiceName || 'Voz Humana Latina'}</span>
+              </span>
               <span className="text-cyan-300 font-bold">{state.progressPercent}%</span>
             </div>
             <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden">
@@ -159,6 +171,27 @@ export const NarradorAudioHUD: React.FC = () => {
               />
             </div>
           </div>
+
+          {/* Voices list selector if available */}
+          {narratorEngine.getAvailableVoices().length > 1 && (
+            <div className="flex items-center gap-1.5 bg-slate-950/70 p-1.5 rounded-xl border border-slate-800 text-[10px]">
+              <span className="text-slate-400 shrink-0 font-medium">Voz:</span>
+              <select
+                value={state.selectedVoiceName}
+                onChange={(e) => {
+                  const targetVoice = narratorEngine.getAvailableVoices().find(v => `${v.name} (${v.lang})` === e.target.value || v.name === e.target.value);
+                  if (targetVoice) narratorEngine.selectVoice(targetVoice.voiceURI);
+                }}
+                className="bg-slate-900 text-cyan-300 font-medium rounded px-1.5 py-0.5 border border-slate-700 w-full truncate focus:outline-none focus:border-cyan-400"
+              >
+                {narratorEngine.getAvailableVoices().map((v) => (
+                  <option key={v.voiceURI} value={`${v.name} (${v.lang})`}>
+                    {v.name.includes('Natural') || v.name.includes('Neural') || v.name.includes('Online') ? '✨ ' : ''}{v.name} ({v.lang})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Speech Controls & Speed */}
           <div className="flex items-center justify-between bg-slate-950/80 p-2.5 rounded-2xl border border-slate-800">
@@ -210,6 +243,29 @@ export const NarradorAudioHUD: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Master Pause / Resume All Button */}
+          <button
+            id="btn-hud-pausar-todos-audios"
+            onClick={handlePauseAll}
+            className={`w-full py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
+              state.isAllAudioPaused
+                ? 'bg-amber-950/60 hover:bg-amber-900/60 text-amber-300 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                : 'bg-red-950/60 hover:bg-red-900/60 text-red-300 border-red-500/50'
+            }`}
+          >
+            {state.isAllAudioPaused ? (
+              <>
+                <Play className="w-3.5 h-3.5 fill-current text-amber-400" />
+                <span>Audios en Pausa — Clic para Reanudar</span>
+              </>
+            ) : (
+              <>
+                <Pause className="w-3.5 h-3.5 text-red-400" />
+                <span>Pausar Todos los Audios</span>
+              </>
+            )}
+          </button>
 
           {/* CHAPTER / ERA SELECTOR LIST */}
           <div className="space-y-1.5">

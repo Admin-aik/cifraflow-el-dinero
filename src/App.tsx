@@ -36,7 +36,9 @@ import {
   Hammer, 
   UserCheck, 
   Headphones,
-  User
+  User,
+  Pause,
+  Play
 } from 'lucide-react';
 
 export default function App() {
@@ -52,7 +54,8 @@ export default function App() {
     resetGame,
     stage,
     currentEra,
-    archetypeId
+    archetypeId,
+    goToCharacterCreation
   } = useGameStore();
 
   const [isMuted, setIsMuted] = useState(soundFx.isMuted());
@@ -108,9 +111,18 @@ export default function App() {
     <div className="flex flex-col w-screen h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none">
       {/* TOP COMPACT BRANDING & PLAYER PASSPORT HEADER */}
       <header className="h-14 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-3 sm:px-4 flex items-center justify-between z-30 shrink-0 shadow-lg">
-        {/* BRAND & LOGO */}
-        <div className="flex items-center gap-2.5 sm:gap-3">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden border border-cyan-400/50 shadow-[0_0_15px_rgba(0,242,254,0.4)] shrink-0 bg-slate-950 flex items-center justify-center">
+        {/* BRAND & LOGO - CLICKING CIFRAFLOW RETURNS TO CHARACTERS */}
+        <button
+          id="btn-cifraflow-nav-personajes"
+          onClick={() => {
+            soundFx.playClick();
+            narratorEngine.stop();
+            goToCharacterCreation();
+          }}
+          className="flex items-center gap-2.5 sm:gap-3 group cursor-pointer text-left hover:opacity-95 transition-all p-1 -ml-1 rounded-xl hover:bg-slate-800/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/50"
+          title="Haz clic en CifraFlow para regresar a los personajes"
+        >
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl overflow-hidden border border-cyan-400/50 group-hover:border-cyan-400 shadow-[0_0_15px_rgba(0,242,254,0.4)] group-hover:shadow-[0_0_20px_rgba(0,242,254,0.6)] shrink-0 bg-slate-950 flex items-center justify-center group-hover:scale-105 transition-all">
             <img
               src={CIFRAFLOW_LOGO}
               alt="CifraFlow Logo"
@@ -120,17 +132,22 @@ export default function App() {
           </div>
           <div>
             <h1 className="text-xs sm:text-sm md:text-base font-black tracking-tight text-white flex items-center gap-1.5 sm:gap-2">
-              <span>CifraFlow</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-cyan-200 group-hover:brightness-125 underline-offset-4 group-hover:underline flex items-center gap-1">
+                CifraFlow
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/40 hidden sm:inline-flex items-center gap-1 font-semibold group-hover:border-cyan-300">
+                  <User className="w-2.5 h-2.5" /> Personajes
+                </span>
+              </span>
               <span className="hidden sm:inline text-cyan-400">• El Viaje del Valor</span>
               <span className="hidden md:inline-block text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/30">
                 Por ircar rojas
               </span>
             </h1>
-            <p className="text-[10px] text-slate-400 hidden lg:block">
-              De la Sal al Bit • Acertijos, Recorridos y Simulador de Finanzas 3D
+            <p className="text-[10px] text-slate-400 hidden lg:block group-hover:text-cyan-300 transition-colors">
+              Haz clic en <strong className="text-cyan-400 font-bold">CifraFlow</strong> para volver a tus personajes • 3D Financiero
             </p>
           </div>
-        </div>
+        </button>
 
         {/* QUICK CONTROLS & ERA SHORTCUTS */}
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -195,6 +212,7 @@ export default function App() {
 
           {/* Audio Narrator Quick Trigger */}
           <button
+            id="btn-audiolibro-header"
             onClick={() => {
               if (narratorState.isSpeaking) {
                 if (narratorState.isPaused) narratorEngine.resume();
@@ -215,6 +233,33 @@ export default function App() {
               {narratorState.isSpeaking 
                 ? (narratorState.isPaused ? 'Audio Pausado' : 'Narrando...') 
                 : 'Audiolibro'}
+            </span>
+          </button>
+
+          {/* Botón Maestro: Pausar Todos los Audios */}
+          <button
+            id="btn-pausar-todos-audios"
+            onClick={() => {
+              if (narratorState.isAllAudioPaused) {
+                narratorEngine.resumeAll();
+              } else {
+                narratorEngine.pauseAll();
+              }
+            }}
+            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 border transition-all ${
+              narratorState.isAllAudioPaused
+                ? 'bg-amber-950/70 hover:bg-amber-900/80 text-amber-300 border-amber-500/50'
+                : 'bg-red-950/70 hover:bg-red-900/80 text-red-300 border-red-500/50'
+            }`}
+            title={narratorState.isAllAudioPaused ? 'Audios actualmente pausados. Clic para reanudar' : 'Pausar todos los audios y narraciones'}
+          >
+            {narratorState.isAllAudioPaused ? (
+              <Play className="w-3.5 h-3.5 fill-current text-amber-400" />
+            ) : (
+              <Pause className="w-3.5 h-3.5 text-red-400" />
+            )}
+            <span className="text-[11px]">
+              {narratorState.isAllAudioPaused ? 'Audios en Pausa' : 'Pausar Audios'}
             </span>
           </button>
 

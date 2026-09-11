@@ -39,13 +39,6 @@ export const AlmacenSalCauriModal: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  // Auto-play audio when modal opens
-  useEffect(() => {
-    if (activeModal === 'almacen_sal') {
-      narratorEngine.play('era_sal_cauri');
-    }
-  }, [activeModal]);
-
   if (activeModal !== 'almacen_sal' && activeModal !== 'vivero') return null;
 
   const isNarratingEra2 = narratorState.isSpeaking && narratorState.currentTrack?.id === 'era_sal_cauri';
