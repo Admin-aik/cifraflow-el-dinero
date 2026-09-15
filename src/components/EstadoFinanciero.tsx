@@ -40,7 +40,8 @@ export const EstadoFinanciero: React.FC = () => {
     openModal,
     banks,
     stocks,
-    archetypeId
+    archetypeId,
+    investmentLedger
   } = useGameStore();
 
   const [expanded, setExpanded] = useState(false);
@@ -192,6 +193,47 @@ export const EstadoFinanciero: React.FC = () => {
               <Sparkles className="w-4 h-4" />
               <span className="hidden sm:inline">Acertijos</span>
             </button>
+          </div>
+        </div>
+
+        {/* INVESTMENT LEDGER & SCORING QUICK STRIP */}
+        <div className="mt-2.5 pt-2.5 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              id="btn-hud-conteo-inversion"
+              onClick={() => openModal('contador_inversion')}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-950/60 to-slate-900 border border-amber-500/40 hover:border-amber-400 text-amber-300 font-bold flex items-center gap-2 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)] transition-all"
+              title="Abrir Conteo y Portafolio de Inversión"
+            >
+              <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
+              <span>Conteo Inversión: <strong className="text-white">{investmentLedger.totalInvestmentPoints} Pts</strong></span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-normal">Fondo: ${investmentLedger.investmentFund}</span>
+            </button>
+
+            <button
+              id="btn-hud-trivia-decisiones"
+              onClick={() => openModal('trivia_decisiones')}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 font-bold flex items-center gap-2 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)] transition-all"
+              title="Centro de Respuestas & Decisiones: ¡Aciertos suman puntos e inversión, errores restan puntos!"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Decisiones & Preguntas (+/- Pts)</span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+            <span className="hidden md:inline">
+              📗 Afirmativas: <strong className="text-emerald-400">+{investmentLedger.stats.answers.pointsGained}</strong> pts
+            </span>
+            <span className="hidden md:inline">
+              ❌ Contrarias: <strong className="text-rose-400">-{investmentLedger.stats.answers.pointsLost}</strong> pts
+            </span>
+            <span className="hidden md:inline">
+              ⚔️ Ataque: <strong className="text-purple-400">+{investmentLedger.stats.attacks.pointsGained}</strong> pts
+            </span>
+            <span className="hidden md:inline">
+              🔨 Construcción: <strong className="text-amber-400">+{investmentLedger.stats.construction.pointsGained}</strong> pts
+            </span>
           </div>
         </div>
 

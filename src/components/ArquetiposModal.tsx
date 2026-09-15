@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { ARCHETYPES, CIFRAFLOW_LOGO } from '../data/archetypes';
+import { soundFx } from '../utils/audio';
 import { ArchetypeId } from '../types';
 import { 
   X, 
@@ -44,14 +45,34 @@ export const ArquetiposModal: React.FC = () => {
         {/* HEADER */}
         <div className="p-5 md:p-6 border-b border-slate-800/80 flex items-center justify-between relative z-10 bg-[#040510]/70">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl overflow-hidden border border-cyan-400/50 shadow-[0_0_15px_rgba(0,242,254,0.4)] shrink-0 bg-slate-950">
-              <img
-                src={CIFRAFLOW_LOGO}
-                alt="CifraFlow Logo"
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <button
+              id="btn-cifraflow-arquetipos-back"
+              onClick={() => {
+                soundFx.playClick();
+                closeModal();
+              }}
+              className="group flex items-center gap-2.5 p-1 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-cyan-400 text-slate-300 hover:text-white transition-all cursor-pointer hover:scale-105 shrink-0"
+              title="Haz clic en el logotipo de CifraFlow para volver a la pantalla anterior"
+            >
+              <div className="w-10 h-10 rounded-2xl overflow-hidden border border-cyan-400/50 group-hover:border-cyan-300 shadow-[0_0_15px_rgba(0,242,254,0.4)] shrink-0 bg-slate-950 p-0.5">
+                <img
+                  src={CIFRAFLOW_LOGO}
+                  alt="CifraFlow Logo - Volver"
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="text-left hidden sm:block pr-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-black text-white group-hover:text-cyan-300">
+                    CIFRAFLOW
+                  </span>
+                  <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-semibold">
+                    Volver
+                  </span>
+                </div>
+              </div>
+            </button>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-500/30">

@@ -13,9 +13,62 @@ import {
   BalanceSheetItem,
   BarterItem,
   ArchetypeId,
-  GameFlowState
+  GameFlowState,
+  QuizQuestion,
+  InvestmentLedger,
+  InvestmentEvent,
+  FloatingScoreEvent,
+  TextScale,
+  BcvRateInfo,
+  EraInvestmentAsset
 } from '../types';
 import { soundFx } from '../utils/audio';
+import { narratorEngine } from '../utils/narrator';
+import { bcvService } from '../utils/bcvService';
+import { INITIAL_QUIZ_QUESTIONS } from '../data/quizQuestions';
+import { INITIAL_ERA_INVESTMENTS } from '../data/eraInvestments';
+
+export const INITIAL_INVESTMENT_LEDGER: InvestmentLedger = {
+  investmentFund: 350,
+  totalInvestmentPoints: 150,
+  stats: {
+    answers: {
+      correctCount: 0,
+      wrongCount: 0,
+      pointsGained: 0,
+      pointsLost: 0
+    },
+    attacks: {
+      hitsCount: 0,
+      villainsDefeatedCount: 0,
+      pointsGained: 0,
+      pointsLost: 0
+    },
+    construction: {
+      craftedCount: 0,
+      pointsGained: 0,
+      pointsLost: 0
+    },
+    investments: {
+      totalInvestedCash: 0,
+      stocksBoughtCount: 0,
+      projectsFundedCount: 0,
+      passiveReturnGenerated: 0
+    }
+  },
+  recentEvents: [
+    {
+      id: 'init_welcome_ledger',
+      timestamp: Date.now(),
+      type: 'invest_gain',
+      category: 'inversion',
+      title: 'Capital Semilla de Inversión Asignado',
+      description: 'Kai y Lia te otorgan $350 y 150 Pts para comenzar tu portafolio de inversión.',
+      deltaPoints: 150,
+      deltaCash: 350
+    }
+  ]
+};
 
 export const INITIAL_ERAS: EraWisdom[] = [
   {
@@ -433,6 +486,44 @@ interface GameState {
   playerTitle: string;
   selectedRelic: string;
 
+  // Student Identification (Fase 0)
+  studentName: string;
+  studentCedula: string;
+  studentSchool: string;
+  setStudentData: (name: string, cedula: string, school: string) => void;
+
+  // Text Accessibility Controller (A-, A 100%, A+ 115%, A++ 130%)
+  textScale: TextScale;
+  setTextScale: (scale: TextScale) => void;
+
+  // BCV Live Rate Integration
+  bcvRateInfo: BcvRateInfo;
+  refreshBcvRate: (silent?: boolean) => Promise<void>;
+
+  // Right-Side HUD Scores (Can be negative!)
+  levelPoints: number;
+  cumulativePoints: number;
+  addScore: (deltaPoints: number, reason?: string) => void;
+  deductScore: (deltaPoints: number, reason?: string) => void;
+
+  // Navigation History
+  phaseHistory: GameFlowState[];
+  setGameFlowState: (phase: GameFlowState) => void;
+  goBack: () => void;
+  goToModules: () => void;
+
+  // Challenges & Missions (Fases 4 & 5)
+  currentChallengeIndex: number;
+  lastChallengeFinished: { title: string; earnedPoints: number; cumulativePoints: number; isNegative: boolean } | null;
+  finishCurrentChallenge: (title: string, earnedPoints: number) => void;
+  continueNextChallenge: () => void;
+  finishMission: () => void;
+
+  // Correlative Eras Progression
+  completedEras: MoneyEra[];
+  completeEraAndAdvance: (era: MoneyEra) => void;
+  setCorrelativeEra: (era: MoneyEra) => void;
+
   // Player stats
   cash: number;
   monthlyPassiveIncome: number;
@@ -512,6 +603,18 @@ interface GameState {
 
   // Anti-Fraud Combat
   attackVillain: (villainId: string, damage: number) => void;
+  receiveVillainDrainPenalty: (villainId: string) => void;
+
+  // Investment Ledger, Era Investments & Quizzes
+  investmentLedger: InvestmentLedger;
+  quizQuestions: QuizQuestion[];
+  eraInvestments: EraInvestmentAsset[];
+  floatingScoreEvent: FloatingScoreEvent | null;
+  answerQuizQuestion: (questionId: string, choice: number | boolean | string) => void;
+  investPointsInEraAsset: (assetId: string) => void;
+  investFundInStock: (ticker: string, shares: number) => void;
+  investInProductiveProject: (projectId: string, cost: number, monthlyReturn: number, name: string) => void;
+  clearFloatingScore: () => void;
 
   // Clock Tick
   tick: () => void;
@@ -524,8 +627,33 @@ export const useGameStore = create<GameState>((set, get) => ({
   isLoggedIn: false,
   playerName: 'Ircar Rojas',
   playerEmail: 'rojasircar@gmail.com',
-  playerTitle: 'Viajero del Tiempo Cuántico',
+  playerTitle: 'Cyber-Cadete CifraFlow',
   selectedRelic: 'cencerro_cabra',
+
+  // Student Identification (Fase 0)
+  studentName: 'Ircar Rojas',
+  studentCedula: 'V-31.450.820',
+  studentSchool: 'Liceo Nacional de Ciencias y Tecnología',
+
+  // Text Accessibility Scale
+  textScale: 'normal',
+
+  // BCV Live Rate Integration
+  bcvRateInfo: bcvService.getCurrentRate(),
+
+  // Right-Side HUD Scores (Negative scores permitted!)
+  levelPoints: 0,
+  cumulativePoints: 0,
+
+  // Navigation History
+  phaseHistory: ['login'],
+
+  // Challenge Progression (Fases 4 & 5)
+  currentChallengeIndex: 1,
+  lastChallengeFinished: null,
+
+  // Correlative Eras Progression
+  completedEras: [],
 
   cash: 250,
   monthlyPassiveIncome: 25,
@@ -533,7 +661,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   prestigePoints: 50,
   currentEra: 'era_trueque',
   stage: 'Mercado del Trueque',
-  archetypeId: 'streamer',
+  archetypeId: 'jorge',
 
   goatsCount: 1,
   wheatSacks: 0,
@@ -584,8 +712,269 @@ export const useGameStore = create<GameState>((set, get) => ({
   ],
   villains: INITIAL_VILLAINS,
   balanceItems: INITIAL_BALANCE_ITEMS,
+  investmentLedger: INITIAL_INVESTMENT_LEDGER,
+  quizQuestions: INITIAL_QUIZ_QUESTIONS,
+  eraInvestments: INITIAL_ERA_INVESTMENTS,
+  floatingScoreEvent: null,
 
   // --- FLOW TRANSITION ACTIONS ---
+  setStudentData: (name: string, cedula: string, school: string) => {
+    soundFx.playPowerUp();
+    set(prev => {
+      const trimmedName = name.trim() || prev.studentName;
+      const trimmedCedula = cedula.trim() || prev.studentCedula;
+      const trimmedSchool = school.trim() || prev.studentSchool;
+      return {
+        studentName: trimmedName,
+        studentCedula: trimmedCedula,
+        studentSchool: trimmedSchool,
+        playerName: trimmedName,
+        isLoggedIn: true,
+        gameFlowState: 'character_creation',
+        phaseHistory: [...prev.phaseHistory, 'character_creation'],
+        notification: {
+          title: '¡Registro de Cyber-Cadete Exitoso!',
+          message: `${trimmedName} (${trimmedCedula}), tu credencial de ${trimmedSchool} ha sido verificada. Elige tu avatar.`,
+          type: 'success'
+        }
+      };
+    });
+  },
+
+  setTextScale: (scale: TextScale) => {
+    soundFx.playClick();
+    set({ textScale: scale });
+  },
+
+  refreshBcvRate: async (silent: boolean = false) => {
+    if (!silent) {
+      soundFx.playCoin();
+    }
+    const newRate = await bcvService.fetchLiveRate();
+    set({ bcvRateInfo: newRate });
+  },
+
+  addScore: (deltaPoints: number, reason?: string) => {
+    soundFx.playSuccess();
+    set(prev => {
+      const newLevel = prev.levelPoints + deltaPoints;
+      const newCumulative = prev.cumulativePoints + deltaPoints;
+      return {
+        levelPoints: newLevel,
+        cumulativePoints: newCumulative,
+        floatingScoreEvent: {
+          id: `score_${Date.now()}_${Math.random()}`,
+          text: `+${deltaPoints} Pts • ${reason || 'Acierto'}`,
+          deltaPoints,
+          type: 'gain',
+          category: 'respuestas'
+        }
+      };
+    });
+  },
+
+  deductScore: (deltaPoints: number, reason?: string) => {
+    soundFx.playError();
+    set(prev => {
+      const pointsToSubtract = Math.abs(deltaPoints);
+      // Can result in negative numbers freely (e.g. -25, -50, etc.)
+      const newLevel = prev.levelPoints - pointsToSubtract;
+      const newCumulative = prev.cumulativePoints - pointsToSubtract;
+      return {
+        levelPoints: newLevel,
+        cumulativePoints: newCumulative,
+        floatingScoreEvent: {
+          id: `score_loss_${Date.now()}_${Math.random()}`,
+          text: `-${pointsToSubtract} Pts • ${reason || 'Penalización'}`,
+          deltaPoints: -pointsToSubtract,
+          type: 'loss',
+          category: 'respuestas'
+        }
+      };
+    });
+  },
+
+  setGameFlowState: (phase: GameFlowState) => {
+    soundFx.playClick();
+    set(prev => ({
+      gameFlowState: phase,
+      phaseHistory: [...prev.phaseHistory, phase]
+    }));
+  },
+
+  goBack: () => {
+    soundFx.playClick();
+    set(prev => {
+      // If an active modal is open on the map, goBack dismisses the modal first
+      if (prev.activeModal) {
+        return { activeModal: null };
+      }
+      if (prev.phaseHistory.length > 1) {
+        const nextHistory = [...prev.phaseHistory];
+        nextHistory.pop(); // remove current phase
+        const targetPhase = nextHistory[nextHistory.length - 1] || 'character_creation';
+        return {
+          gameFlowState: targetPhase,
+          phaseHistory: nextHistory
+        };
+      }
+      // Intelligent fallback when history has 1 element
+      let fallbackPhase: GameFlowState = 'login';
+      if (prev.gameFlowState === 'map_gameplay') fallbackPhase = 'module_selection';
+      else if (prev.gameFlowState === 'module_selection') fallbackPhase = 'character_creation';
+      else if (prev.gameFlowState === 'character_creation') fallbackPhase = 'login';
+      else if (prev.gameFlowState === 'transition') fallbackPhase = 'character_creation';
+      else if (prev.gameFlowState === 'game_over_challenge') fallbackPhase = 'map_gameplay';
+      else if (prev.gameFlowState === 'mission_complete') fallbackPhase = 'map_gameplay';
+      else if (prev.gameFlowState === 'login') {
+        fallbackPhase = prev.isLoggedIn ? 'character_creation' : 'login';
+      }
+
+      return {
+        gameFlowState: fallbackPhase,
+        phaseHistory: fallbackPhase === 'login' ? ['login'] : ['login', fallbackPhase]
+      };
+    });
+  },
+
+  goToModules: () => {
+    soundFx.playClick();
+    set(prev => ({
+      gameFlowState: 'module_selection',
+      phaseHistory: [...prev.phaseHistory, 'module_selection']
+    }));
+  },
+
+  finishCurrentChallenge: (title: string, earnedPoints: number) => {
+    soundFx.playVictory();
+    narratorEngine.play('game_over_reto');
+    set(prev => {
+      const isNeg = earnedPoints < 0;
+      return {
+        lastChallengeFinished: {
+          title,
+          earnedPoints,
+          cumulativePoints: prev.cumulativePoints,
+          isNegative: isNeg
+        },
+        currentChallengeIndex: prev.currentChallengeIndex + 1,
+        gameFlowState: 'game_over_challenge',
+        phaseHistory: [...prev.phaseHistory, 'game_over_challenge']
+      };
+    });
+  },
+
+  continueNextChallenge: () => {
+    soundFx.playPowerUp();
+    set(prev => {
+      // If reached challenge 6 or higher, finish mission
+      if (prev.currentChallengeIndex > 5) {
+        narratorEngine.play('fin_mision');
+        return {
+          gameFlowState: 'mission_complete',
+          phaseHistory: [...prev.phaseHistory, 'mission_complete']
+        };
+      }
+      return {
+        gameFlowState: 'map_gameplay',
+        phaseHistory: [...prev.phaseHistory, 'map_gameplay'],
+        levelPoints: 0 // Reset level points for new challenge while keeping cumulativePoints
+      };
+    });
+  },
+
+  finishMission: () => {
+    soundFx.playVictory();
+    narratorEngine.play('fin_mision');
+    set(prev => ({
+      gameFlowState: 'mission_complete',
+      phaseHistory: [...prev.phaseHistory, 'mission_complete']
+    }));
+  },
+
+  completeEraAndAdvance: (era: MoneyEra) => {
+    soundFx.playVictory();
+    set(prev => {
+      const alreadyCompleted = prev.completedEras.includes(era);
+      const newCompleted = alreadyCompleted ? prev.completedEras : [...prev.completedEras, era];
+      
+      let nextEra: MoneyEra = 'era_sal_cauri';
+      let nextStage: FinancialTier = 'Rutas de la Sal y Cauri';
+      let modalToOpen: string | null = null;
+      let rewardPts = 150;
+      let eraTitle = '';
+
+      if (era === 'era_trueque') {
+        nextEra = 'era_sal_cauri';
+        nextStage = 'Rutas de la Sal y Cauri';
+        modalToOpen = 'almacen_sal';
+        eraTitle = 'Era 1 (El Mercado del Trueque)';
+      } else if (era === 'era_sal_cauri') {
+        nextEra = 'era_forja_lidia';
+        nextStage = 'Reino de Lidia';
+        modalToOpen = 'forja_lidia';
+        eraTitle = 'Era 2 (Sal y Cauri)';
+      } else if (era === 'era_forja_lidia') {
+        nextEra = 'era_bit_digital';
+        nextStage = 'Ciberespacio del Bit';
+        modalToOpen = 'red_digital';
+        eraTitle = 'Era 3 (La Forja de Lidia)';
+      } else if (era === 'era_bit_digital') {
+        nextEra = 'era_bit_digital';
+        nextStage = 'Ciberespacio del Bit';
+        modalToOpen = null;
+        rewardPts = 200;
+        eraTitle = 'Era 4 (La Red Digital & Blockchain)';
+      }
+
+      // Unlock next era in eras collection
+      const updatedEras = prev.eras.map(e => {
+        if (e.era === era) {
+          return { ...e, unlocked: true };
+        }
+        if (e.era === nextEra) {
+          return { ...e, unlocked: true };
+        }
+        return e;
+      });
+
+      const nextLevelPts = prev.levelPoints + rewardPts;
+      const nextCumPts = prev.cumulativePoints + rewardPts;
+
+      return {
+        completedEras: newCompleted,
+        currentEra: nextEra,
+        stage: nextStage,
+        eras: updatedEras,
+        levelPoints: nextLevelPts,
+        cumulativePoints: nextCumPts,
+        activeModal: prev.activeModal === 'cuadro_eras' ? 'cuadro_eras' : modalToOpen,
+        notification: {
+          title: `¡Misión de la ${eraTitle} Superada!`,
+          message: era === 'era_bit_digital' 
+            ? '¡Has completado las 4 Eras correlativamente! ¡Reclama tu Certificado de Competencias!'
+            : `Avanzando correlativamente hacia la siguiente era: ${nextStage}. (+${rewardPts} Pts)`,
+          type: 'achievement'
+        }
+      };
+    });
+  },
+
+  setCorrelativeEra: (era: MoneyEra) => {
+    soundFx.playClick();
+    set(prev => {
+      let stage: FinancialTier = 'Mercado del Trueque';
+      if (era === 'era_sal_cauri') stage = 'Rutas de la Sal y Cauri';
+      if (era === 'era_forja_lidia') stage = 'Reino de Lidia';
+      if (era === 'era_bit_digital') stage = 'Ciberespacio del Bit';
+
+      return {
+        currentEra: era,
+        stage
+      };
+    });
+  },
+
   setLoginData: (name: string, email?: string) => {
     soundFx.playPowerUp();
     set({
@@ -643,6 +1032,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       prestigePoints: prev.prestigePoints + bonusPrestige,
       monthlyPassiveIncome: prev.monthlyPassiveIncome + bonusPassive,
       gameFlowState: 'transition',
+      phaseHistory: [...prev.phaseHistory, 'transition'],
       notification: {
         title: '¡Personaje Forjado!',
         message: `${playerName}, has forjado tu identidad como ${playerTitle}. ¡Iniciando salto al Mapa de las Eras!`,
@@ -653,24 +1043,27 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   startMapGameplay: () => {
     soundFx.playPowerUp();
-    set({
+    set(prev => ({
       gameFlowState: 'map_gameplay',
+      phaseHistory: [...prev.phaseHistory, 'map_gameplay'],
       activeModal: null
-    });
+    }));
   },
 
   goToLogin: () => {
     soundFx.playClick();
-    set({
-      gameFlowState: 'login'
-    });
+    set(prev => ({
+      gameFlowState: 'login',
+      phaseHistory: [...prev.phaseHistory, 'login']
+    }));
   },
 
   goToCharacterCreation: () => {
     soundFx.playClick();
-    set({
-      gameFlowState: 'character_creation'
-    });
+    set(prev => ({
+      gameFlowState: 'character_creation',
+      phaseHistory: [...prev.phaseHistory, 'character_creation']
+    }));
   },
 
   toggleFlowVision: () => {
@@ -884,16 +1277,54 @@ export const useGameStore = create<GameState>((set, get) => ({
       });
 
       const newCopper = productId === 'cobre_tool' ? prev.copperToolsCount + 1 : prev.copperToolsCount;
+      const buildPoints = 75;
+      const buildCashValue = 35;
+
+      const newLedger: InvestmentLedger = {
+        ...prev.investmentLedger,
+        investmentFund: prev.investmentLedger.investmentFund + buildCashValue,
+        totalInvestmentPoints: prev.investmentLedger.totalInvestmentPoints + buildPoints,
+        stats: {
+          ...prev.investmentLedger.stats,
+          construction: {
+            ...prev.investmentLedger.stats.construction,
+            craftedCount: prev.investmentLedger.stats.construction.craftedCount + 1,
+            pointsGained: prev.investmentLedger.stats.construction.pointsGained + buildPoints
+          }
+        },
+        recentEvents: [
+          {
+            id: `build_${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'build_gain',
+            category: 'construccion',
+            title: `Construcción: ${prod.name}`,
+            description: `Fabricaste 1 unidad. Agregó valor tangible y capital productivo.`,
+            deltaPoints: buildPoints,
+            deltaCash: buildCashValue
+          },
+          ...prev.investmentLedger.recentEvents.slice(0, 19)
+        ]
+      };
 
       return {
         cash: prev.cash - prod.costToMake,
         copperToolsCount: newCopper,
         tangibles: updatedTangibles,
         quests: updatedQuests,
-        prestigePoints: prev.prestigePoints + 20,
+        prestigePoints: prev.prestigePoints + buildPoints,
+        investmentLedger: newLedger,
+        floatingScoreEvent: {
+          id: `float_${Date.now()}`,
+          text: `+${buildPoints} Pts Inversión (Construcción)`,
+          deltaPoints: buildPoints,
+          deltaCash: buildCashValue,
+          type: 'gain',
+          category: 'construccion'
+        },
         notification: {
-          title: '¡Insumo Fabricado!',
-          message: `Has creado 1 unidad de ${prod.name}. Llévala al mercado para generar margen de ganancia.`,
+          title: '¡Insumo Fabricado & Puntos Ganados!',
+          message: `Has creado 1 unidad de ${prod.name}. Ganaste +${buildPoints} Puntos y +$${buildCashValue} para tu Fondo de Inversión.`,
           type: 'success'
         }
       };
@@ -1293,17 +1724,523 @@ export const useGameStore = create<GameState>((set, get) => ({
       });
 
       const wasDefeated = updatedVillains.find(v => v.id === villainId)?.defeated;
+      const attackPoints = wasDefeated ? 250 : 60;
+      const attackCash = wasDefeated ? 200 : 40;
+
+      const newLedger: InvestmentLedger = {
+        ...prev.investmentLedger,
+        investmentFund: prev.investmentLedger.investmentFund + attackCash,
+        totalInvestmentPoints: prev.investmentLedger.totalInvestmentPoints + attackPoints,
+        stats: {
+          ...prev.investmentLedger.stats,
+          attacks: {
+            ...prev.investmentLedger.stats.attacks,
+            hitsCount: prev.investmentLedger.stats.attacks.hitsCount + 1,
+            villainsDefeatedCount: wasDefeated 
+              ? prev.investmentLedger.stats.attacks.villainsDefeatedCount + 1 
+              : prev.investmentLedger.stats.attacks.villainsDefeatedCount,
+            pointsGained: prev.investmentLedger.stats.attacks.pointsGained + attackPoints
+          }
+        },
+        recentEvents: [
+          {
+            id: `attack_${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'attack_gain',
+            category: 'ataque',
+            title: wasDefeated ? '¡Monstruo de Fraude Derrotado!' : 'Ataque Certero a Amenaza',
+            description: wasDefeated 
+              ? 'Has neutralizado la amenaza financiera. +250 Pts y +$200 de recompensa.' 
+              : `Golpeaste a la amenaza por ${damage} daño. +${attackPoints} Pts ganados.`,
+            deltaPoints: attackPoints,
+            deltaCash: attackCash
+          },
+          ...prev.investmentLedger.recentEvents.slice(0, 19)
+        ]
+      };
 
       return {
         villains: updatedVillains,
-        prestigePoints: prev.prestigePoints + (wasDefeated ? 200 : 30),
+        cash: prev.cash + attackCash,
+        prestigePoints: prev.prestigePoints + attackPoints,
+        investmentLedger: newLedger,
+        floatingScoreEvent: {
+          id: `float_${Date.now()}`,
+          text: wasDefeated ? `+${attackPoints} Pts Inversión (¡Monstruo Derrotado!)` : `+${attackPoints} Pts Inversión (Ataque Exitoso)`,
+          deltaPoints: attackPoints,
+          deltaCash: attackCash,
+          type: 'gain',
+          category: 'ataque'
+        },
         notification: wasDefeated ? {
           title: '¡Monstruo de Gasto Neutralizado!',
-          message: 'Has protegido tu flujo de caja de drenajes invisibles.',
+          message: 'Has protegido tu flujo de caja de drenajes invisibles. +250 Puntos para Inversión.',
           type: 'achievement'
         } : null
       };
     });
+  },
+
+  receiveVillainDrainPenalty: (villainId) => {
+    soundFx.playError();
+    set(prev => {
+      const villain = prev.villains.find(v => v.id === villainId);
+      if (!villain || villain.defeated) return prev;
+
+      const penaltyPoints = 25;
+      const penaltyCash = Math.min(prev.cash, 15);
+
+      const newLedger: InvestmentLedger = {
+        ...prev.investmentLedger,
+        investmentFund: Math.max(0, prev.investmentLedger.investmentFund - penaltyCash),
+        totalInvestmentPoints: Math.max(0, prev.investmentLedger.totalInvestmentPoints - penaltyPoints),
+        stats: {
+          ...prev.investmentLedger.stats,
+          attacks: {
+            ...prev.investmentLedger.stats.attacks,
+            pointsLost: prev.investmentLedger.stats.attacks.pointsLost + penaltyPoints
+          }
+        },
+        recentEvents: [
+          {
+            id: `drain_${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'attack_loss',
+            category: 'ataque',
+            title: `Drenaje de ${villain.name}`,
+            description: `No te defendiste a tiempo y sufriste drenaje de liquidez y reputación.`,
+            deltaPoints: -penaltyPoints,
+            deltaCash: -penaltyCash
+          },
+          ...prev.investmentLedger.recentEvents.slice(0, 19)
+        ]
+      };
+
+      return {
+        cash: Math.max(0, prev.cash - penaltyCash),
+        prestigePoints: Math.max(0, prev.prestigePoints - penaltyPoints),
+        investmentLedger: newLedger,
+        floatingScoreEvent: {
+          id: `float_${Date.now()}`,
+          text: `-${penaltyPoints} Pts (Drenaje de Monstruo)`,
+          deltaPoints: -penaltyPoints,
+          deltaCash: -penaltyCash,
+          type: 'loss',
+          category: 'ataque'
+        },
+        notification: {
+          title: '¡Drenaje de Capital Sufrido!',
+          message: `El monstruo ${villain.name} drenó -$${penaltyCash} y perdiste -${penaltyPoints} Pts. ¡Activa tus defensas!`,
+          type: 'warning'
+        }
+      };
+    });
+  },
+
+  answerQuizQuestion: (questionId, choice) => {
+    set(prev => {
+      const q = prev.quizQuestions.find(item => item.id === questionId);
+      if (!q) return prev;
+
+      // Determine selected option from 3 options array or fallback
+      let selectedOption: { id?: string; letter?: string; text: string; isCorrect: boolean; explanation: string };
+      let selectedIndex = 0;
+
+      if (typeof choice === 'number') {
+        selectedIndex = Math.max(0, Math.min(choice, (q.options?.length || 1) - 1));
+        selectedOption = q.options ? q.options[selectedIndex] : (selectedIndex === 0 ? q.affirmativeOption! : q.negativeOption!);
+      } else if (typeof choice === 'string') {
+        const foundIdx = q.options?.findIndex(o => o.id === choice || o.letter === choice);
+        if (foundIdx !== undefined && foundIdx >= 0) {
+          selectedIndex = foundIdx;
+          selectedOption = q.options[foundIdx];
+        } else {
+          selectedOption = q.options ? q.options[0] : q.affirmativeOption!;
+        }
+      } else {
+        // Boolean legacy fallback
+        if (q.options && q.options.length > 0) {
+          selectedIndex = choice ? 0 : 1;
+          selectedOption = q.options[selectedIndex] || q.options[0];
+        } else {
+          selectedOption = choice ? q.affirmativeOption! : q.negativeOption!;
+        }
+      }
+
+      const isCorrect = selectedOption.isCorrect;
+
+      const updatedQuestions = prev.quizQuestions.map(item => {
+        if (item.id === questionId) {
+          return {
+            ...item,
+            answered: true,
+            selectedOptionIndex: selectedIndex,
+            selectedOptionId: selectedOption.id || `opt_${selectedIndex}`,
+            wasCorrect: isCorrect
+          };
+        }
+        return item;
+      });
+
+      if (isCorrect) {
+        soundFx.playPowerUp();
+        const pReward = q.pointsReward;
+        const cReward = q.cashReward;
+
+        const newLedger: InvestmentLedger = {
+          ...prev.investmentLedger,
+          investmentFund: prev.investmentLedger.investmentFund + cReward,
+          totalInvestmentPoints: prev.investmentLedger.totalInvestmentPoints + pReward,
+          stats: {
+            ...prev.investmentLedger.stats,
+            answers: {
+              ...prev.investmentLedger.stats.answers,
+              correctCount: prev.investmentLedger.stats.answers.correctCount + 1,
+              pointsGained: prev.investmentLedger.stats.answers.pointsGained + pReward
+            }
+          },
+          recentEvents: [
+            {
+              id: `ans_${Date.now()}`,
+              timestamp: Date.now(),
+              type: 'answer_gain',
+              category: 'respuestas',
+              title: `Respuesta Acertada: ${q.title} (${selectedOption.letter || 'Opción'})`,
+              description: selectedOption.explanation,
+              deltaPoints: pReward,
+              deltaCash: cReward
+            },
+            ...prev.investmentLedger.recentEvents.slice(0, 19)
+          ]
+        };
+
+        return {
+          quizQuestions: updatedQuestions,
+          cash: prev.cash + cReward,
+          prestigePoints: prev.prestigePoints + pReward,
+          levelPoints: prev.levelPoints + pReward,
+          cumulativePoints: prev.cumulativePoints + pReward,
+          investmentLedger: newLedger,
+          floatingScoreEvent: {
+            id: `float_${Date.now()}`,
+            text: `+${pReward} Pts (¡Respuesta Acertada!)`,
+            deltaPoints: pReward,
+            deltaCash: cReward,
+            type: 'gain',
+            category: 'respuestas'
+          },
+          notification: {
+            title: '¡Respuesta Acertada!',
+            message: `Ganaste +${pReward} Puntos y +$${cReward} para tu Fondo de Inversión. ${selectedOption.explanation}`,
+            type: 'achievement'
+          }
+        };
+      } else {
+        soundFx.playError();
+        const pPenalty = q.pointsPenalty;
+        const cPenalty = q.cashPenalty;
+
+        const newLedger: InvestmentLedger = {
+          ...prev.investmentLedger,
+          investmentFund: Math.max(0, prev.investmentLedger.investmentFund - cPenalty),
+          totalInvestmentPoints: prev.investmentLedger.totalInvestmentPoints - pPenalty,
+          stats: {
+            ...prev.investmentLedger.stats,
+            answers: {
+              ...prev.investmentLedger.stats.answers,
+              wrongCount: prev.investmentLedger.stats.answers.wrongCount + 1,
+              pointsLost: prev.investmentLedger.stats.answers.pointsLost + pPenalty
+            }
+          },
+          recentEvents: [
+            {
+              id: `ans_${Date.now()}`,
+              timestamp: Date.now(),
+              type: 'answer_loss',
+              category: 'respuestas',
+              title: `Respuesta Errada: ${q.title} (${selectedOption.letter || 'Opción'})`,
+              description: selectedOption.explanation || 'Respuesta incorrecta. Analiza los conceptos para deducir la alternativa acertada.',
+              deltaPoints: -pPenalty,
+              deltaCash: -cPenalty
+            },
+            ...prev.investmentLedger.recentEvents.slice(0, 19)
+          ]
+        };
+
+        return {
+          quizQuestions: updatedQuestions,
+          cash: Math.max(0, prev.cash - cPenalty),
+          prestigePoints: prev.prestigePoints - pPenalty,
+          levelPoints: prev.levelPoints - pPenalty,
+          cumulativePoints: prev.cumulativePoints - pPenalty,
+          investmentLedger: newLedger,
+          floatingScoreEvent: {
+            id: `float_${Date.now()}`,
+            text: `-${pPenalty} Pts (Penalización por Error)`,
+            deltaPoints: -pPenalty,
+            deltaCash: -cPenalty,
+            type: 'loss',
+            category: 'respuestas'
+          },
+          notification: {
+            title: '¡Respuesta Errada!',
+            message: `Perdiste -${pPenalty} Puntos en tu acumulado. ${selectedOption.explanation}`,
+            type: 'warning'
+          }
+        };
+      }
+    });
+  },
+
+  investPointsInEraAsset: (assetId: string) => {
+    const state = get();
+    const asset = state.eraInvestments.find(a => a.id === assetId);
+    if (!asset) return;
+
+    const availablePoints = Math.max(state.investmentLedger.totalInvestmentPoints, state.levelPoints);
+
+    if (availablePoints < asset.costPoints) {
+      soundFx.playError();
+      narratorEngine.playIconNarration('transaccion_error', {
+        title: 'Puntos Insuficientes',
+        eraName: 'Transacciones con Puntos',
+        text: `No tienes suficientes puntos para realizar esta transacción. Requieres ${asset.costPoints} puntos. Responde el acertijo de la era para ganar más puntos de inversión.`
+      });
+      set({
+        notification: {
+          title: 'Puntos Insuficientes para Invertir',
+          message: `Requieres ${asset.costPoints} puntos para adquirir ${asset.title}. Tienes ${availablePoints} puntos. Responde correctamente el acertijo de la era para acumular puntos.`,
+          type: 'warning'
+        }
+      });
+      return;
+    }
+
+    soundFx.playPowerUp();
+    set(prev => {
+      const updatedInvestments = prev.eraInvestments.map(a => {
+        if (a.id === assetId) {
+          return { ...a, purchasedCount: a.purchasedCount + 1 };
+        }
+        return a;
+      });
+
+      const deductPoints = asset.costPoints;
+      const newTotalPoints = prev.investmentLedger.totalInvestmentPoints - deductPoints;
+      const newMonthlyPassive = prev.monthlyPassiveIncome + Math.round(asset.passivePointsYield / 2);
+      const newCash = prev.cash + asset.cashBonus;
+      const pointGrowthBonus = Math.round(asset.costPoints * 0.2);
+
+      const newLedger: InvestmentLedger = {
+        ...prev.investmentLedger,
+        totalInvestmentPoints: newTotalPoints,
+        stats: {
+          ...prev.investmentLedger.stats,
+          investments: {
+            ...prev.investmentLedger.stats.investments,
+            projectsFundedCount: prev.investmentLedger.stats.investments.projectsFundedCount + 1,
+            passiveReturnGenerated: prev.investmentLedger.stats.investments.passiveReturnGenerated + asset.passivePointsYield
+          }
+        },
+        recentEvents: [
+          {
+            id: `inv_era_${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'invest_gain',
+            category: 'inversion',
+            title: `Inversión: ${asset.title}`,
+            description: `Invertiste ${deductPoints} Pts en ${asset.title}. Genera +${asset.passivePointsYield} Pts pasivos y +$${asset.cashBonus} de liquidez.`,
+            deltaPoints: -deductPoints,
+            deltaCash: asset.cashBonus
+          },
+          ...prev.investmentLedger.recentEvents.slice(0, 19)
+        ]
+      };
+
+      return {
+        eraInvestments: updatedInvestments,
+        monthlyPassiveIncome: newMonthlyPassive,
+        cash: newCash,
+        levelPoints: prev.levelPoints + pointGrowthBonus,
+        cumulativePoints: prev.cumulativePoints + pointGrowthBonus,
+        investmentLedger: newLedger,
+        floatingScoreEvent: {
+          id: `float_inv_${Date.now()}`,
+          text: `Inversión: ${asset.title} (-${deductPoints} Pts, +$${asset.cashBonus})`,
+          deltaPoints: -deductPoints,
+          deltaCash: asset.cashBonus,
+          type: 'gain',
+          category: 'inversion'
+        },
+        notification: {
+          title: '¡Transacción Exitosa con Puntos!',
+          message: `Invertiste ${deductPoints} puntos en ${asset.title}. Tu flujo de ingresos pasivos aumentó a $${newMonthlyPassive}/tick.`,
+          type: 'achievement'
+        }
+      };
+    });
+
+    narratorEngine.playIconNarration(`inv_${asset.id}`, {
+      title: `Transacción: ${asset.title}`,
+      eraName: 'Inversión de la Era',
+      icon: asset.icon,
+      text: `Has invertido exitosamente ${asset.costPoints} puntos en ${asset.title}. ${asset.description}. Tus retornos pasivos han aumentado.`
+    });
+  },
+
+  investFundInStock: (ticker, shares) => {
+    const state = get();
+    const stock = state.stocks.find(s => s.ticker === ticker);
+    if (!stock || shares <= 0) return;
+
+    const totalCost = stock.price * shares;
+    if (state.investmentLedger.investmentFund < totalCost && state.cash < totalCost) {
+      soundFx.playError();
+      set({
+        notification: {
+          title: 'Fondos de Inversión Insuficientes',
+          message: `Requieres $${totalCost.toFixed(2)} para comprar ${shares} acciones de ${stock.name}. Acumula más puntos con respuestas, ataques y construcciones.`,
+          type: 'warning'
+        }
+      });
+      return;
+    }
+
+    soundFx.playCoin();
+    set(prev => {
+      const updatedStocks = prev.stocks.map(s => {
+        if (s.ticker === ticker) {
+          return { ...s, sharesOwned: s.sharesOwned + shares };
+        }
+        return s;
+      });
+
+      const deductFromFund = Math.min(prev.investmentLedger.investmentFund, totalCost);
+      const remainingDeduct = totalCost - deductFromFund;
+
+      const monthlyPassiveGain = (stock.price * shares * (stock.dividendYield / 100)) / 12;
+
+      const newLedger: InvestmentLedger = {
+        ...prev.investmentLedger,
+        investmentFund: prev.investmentLedger.investmentFund - deductFromFund,
+        stats: {
+          ...prev.investmentLedger.stats,
+          investments: {
+            ...prev.investmentLedger.stats.investments,
+            totalInvestedCash: prev.investmentLedger.stats.investments.totalInvestedCash + totalCost,
+            stocksBoughtCount: prev.investmentLedger.stats.investments.stocksBoughtCount + shares,
+            passiveReturnGenerated: prev.investmentLedger.stats.investments.passiveReturnGenerated + monthlyPassiveGain
+          }
+        },
+        recentEvents: [
+          {
+            id: `inv_${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'invest_gain',
+            category: 'inversion',
+            title: `Inversión BVC: ${shares}x ${stock.ticker}`,
+            description: `Adquiriste acciones de ${stock.name}. Dividendos estimados: +$${monthlyPassiveGain.toFixed(2)}/tick.`,
+            deltaPoints: 50,
+            deltaCash: -totalCost
+          },
+          ...prev.investmentLedger.recentEvents.slice(0, 19)
+        ]
+      };
+
+      return {
+        stocks: updatedStocks,
+        cash: Math.max(0, prev.cash - remainingDeduct),
+        monthlyPassiveIncome: prev.monthlyPassiveIncome + monthlyPassiveGain,
+        prestigePoints: prev.prestigePoints + 50,
+        investmentLedger: newLedger,
+        floatingScoreEvent: {
+          id: `float_${Date.now()}`,
+          text: `+50 Pts Inversión (Acciones BVC Adquiridas)`,
+          deltaPoints: 50,
+          deltaCash: 0,
+          type: 'gain',
+          category: 'inversion'
+        },
+        notification: {
+          title: '¡Inversión Bursátil Ejecutada!',
+          message: `Compraste ${shares} acciones de ${stock.name} en la Bolsa de Caracas. Flujo pasivo: +$${monthlyPassiveGain.toFixed(2)}/tick.`,
+          type: 'success'
+        }
+      };
+    });
+  },
+
+  investInProductiveProject: (projectId, cost, monthlyReturn, name) => {
+    const state = get();
+    if (state.investmentLedger.investmentFund < cost && state.cash < cost) {
+      soundFx.playError();
+      set({
+        notification: {
+          title: 'Capital Insuficiente para Proyecto',
+          message: `Requieres $${cost} en tu fondo para expandir ${name}. Acumula más puntos en el juego.`,
+          type: 'warning'
+        }
+      });
+      return;
+    }
+
+    soundFx.playPowerUp();
+    set(prev => {
+      const deductFromFund = Math.min(prev.investmentLedger.investmentFund, cost);
+      const remainingDeduct = cost - deductFromFund;
+
+      const newLedger: InvestmentLedger = {
+        ...prev.investmentLedger,
+        investmentFund: prev.investmentLedger.investmentFund - deductFromFund,
+        totalInvestmentPoints: prev.investmentLedger.totalInvestmentPoints + 100,
+        stats: {
+          ...prev.investmentLedger.stats,
+          investments: {
+            ...prev.investmentLedger.stats.investments,
+            totalInvestedCash: prev.investmentLedger.stats.investments.totalInvestedCash + cost,
+            projectsFundedCount: prev.investmentLedger.stats.investments.projectsFundedCount + 1,
+            passiveReturnGenerated: prev.investmentLedger.stats.investments.passiveReturnGenerated + monthlyReturn
+          }
+        },
+        recentEvents: [
+          {
+            id: `proj_${Date.now()}`,
+            timestamp: Date.now(),
+            type: 'invest_gain',
+            category: 'inversion',
+            title: `Expansión de Proyecto: ${name}`,
+            description: `Desplegaste $${cost} de capital. Retorno pasivo generado: +$${monthlyReturn}/tick.`,
+            deltaPoints: 100,
+            deltaCash: -cost
+          },
+          ...prev.investmentLedger.recentEvents.slice(0, 19)
+        ]
+      };
+
+      return {
+        cash: Math.max(0, prev.cash - remainingDeduct),
+        monthlyPassiveIncome: prev.monthlyPassiveIncome + monthlyReturn,
+        prestigePoints: prev.prestigePoints + 100,
+        investmentLedger: newLedger,
+        floatingScoreEvent: {
+          id: `float_${Date.now()}`,
+          text: `+100 Pts Inversión (Proyecto ${name})`,
+          deltaPoints: 100,
+          deltaCash: 0,
+          type: 'gain',
+          category: 'inversion'
+        },
+        notification: {
+          title: '¡Proyecto Productivo Financiado!',
+          message: `Invertiste $${cost} en ${name}. Tu flujo pasivo aumentó en +$${monthlyReturn}/tick.`,
+          type: 'achievement'
+        }
+      };
+    });
+  },
+
+  clearFloatingScore: () => {
+    set({ floatingScoreEvent: null });
   },
 
   // --- GAME CLOCK TICK ---
@@ -1367,6 +2304,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       stocks: INITIAL_STOCKS,
       villains: INITIAL_VILLAINS,
       balanceItems: INITIAL_BALANCE_ITEMS,
+      investmentLedger: INITIAL_INVESTMENT_LEDGER,
+      quizQuestions: INITIAL_QUIZ_QUESTIONS,
+      floatingScoreEvent: null,
       notification: {
         title: '¡Odisea Reiniciada!',
         message: 'Comienza de nuevo el viaje del valor junto a Kai y Lia.',

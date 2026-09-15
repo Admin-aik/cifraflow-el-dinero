@@ -23,12 +23,12 @@ export const NARRATION_STORIES: Record<string, NarrationTrack> = {
   },
   creacion_personaje: {
     id: 'creacion_personaje',
-    title: 'Cámara de Forja: Creación de tu Identidad',
+    title: 'Cámara de Forja: Selección de Avatar',
     eraName: 'Personalización de Arquetipo',
     icon: '⚡',
     color: '#d946ef',
-    durationEstimateSeconds: 26,
-    text: `¡Fíjate bien, mi gente! Has ingresado a la Cámara de Forja Temporal. Elige tu arquetipo generacional: Kai Streamer con su viralidad digital, Lia Coder con su optimización algorítmica, Maya Diseñadora con su valor de marca, o Leo Barista con su flujo de caja diario. Selecciona tu reliquia ancestral para recibir bonificaciones de arranque y prepararte para el gran salto al mapa de las eras.`
+    durationEstimateSeconds: 24,
+    text: `¡Fíjate bien, mi gente! Has ingresado a la Cámara de Forja Temporal. Elige tu avatar generacional entre los cuatro viajeros: Jorge, el Operador Táctico de Accesos; Ircar, la Especialista Cloud; Iván, el Auditor Forense Digital; o Carlos, el Estratega Presupuestario. Asigna tu nombre y título honorífico, y pulsa confirmar para dar el gran salto al Mapa de las Eras.`
   },
   portada: {
     id: 'portada',
@@ -84,6 +84,142 @@ export const NARRATION_STORIES: Record<string, NarrationTrack> = {
     durationEstimateSeconds: 37,
     text: `¡A la velocidad de la luz, mi gente! Era cuatro: La Frontera Digital y la Red Invisible. En el presente, Kai y Lia ya no tocan monedas físicas, pero su impacto es más global que nunca. Rodeados de pantallas holográficas y flujos de datos, observan cómo los números bailan en tiempo real. El dinero se ha transformado en código criptográfico, en impulsos de fibra óptica y en redes descentralizadas de blockchain. Ya no es sal, ni oro, ni billetes de papel: es pura información y confianza compartida en una red global. El viaje del valor ha llegado a la era digital, donde tu mejor activo es tu conocimiento financiero.`
   },
+  // NARRACIONES ESPECÍFICAS DE ICONOS, MISIONES, ASERTIJOS E INVERSIONES
+  icon_era_trueque: {
+    id: 'icon_era_trueque',
+    title: 'Era 1: El Mercado del Trueque',
+    eraName: 'Era 1',
+    icon: '🐐',
+    color: '#f59e0b',
+    durationEstimateSeconds: 15,
+    text: `¡Era uno! El Mercado del Trueque. Aquí experimentas la fricción de la doble coincidencia de necesidades con la cabra inquieta, el trigo y las herramientas de cobre.`
+  },
+  icon_era_sal_cauri: {
+    id: 'icon_era_sal_cauri',
+    title: 'Era 2: Sal & Conchas de Cauri',
+    eraName: 'Era 2',
+    icon: '🧂',
+    color: '#06b6d4',
+    durationEstimateSeconds: 16,
+    text: `¡Era dos! Dinero Mercancía. Lia sostiene conchas de cauri y Kai guarda sal marina pura, el origen del primer salario divisible y portátil.`
+  },
+  icon_era_forja_lidia: {
+    id: 'icon_era_forja_lidia',
+    title: 'Era 3: La Forja Real de Lidia',
+    eraName: 'Era 3',
+    icon: '🦁',
+    color: '#eab308',
+    durationEstimateSeconds: 16,
+    text: `¡Era tres! La Forja Real de Lidia. El artesano Darío estampa el sello del león sobre el electro de oro y plata para estandarizar la confianza ante el mundo.`
+  },
+  icon_era_red_digital: {
+    id: 'icon_era_red_digital',
+    title: 'Era 4: Red Digital & Blockchain',
+    eraName: 'Era 4',
+    icon: '⚡',
+    color: '#d946ef',
+    durationEstimateSeconds: 16,
+    text: `¡Era cuatro! El Ciberespacio y el Bit. El valor se transmite como información pura a la velocidad de la luz mediante criptografía y redes descentralizadas.`
+  },
+  icon_acertijo_trueque: {
+    id: 'icon_acertijo_trueque',
+    title: 'Misión y Acertijo: Era 1 Trueque',
+    eraName: 'Acertijo 1',
+    icon: '🧩',
+    color: '#f59e0b',
+    durationEstimateSeconds: 20,
+    text: `Misión y Acertijo de la Era uno: Tienes cuatro patas y das leche de primera, pero el mercader solo busca cobre. ¿Cómo romperás la fricción de la doble coincidencia? Elige la respuesta correcta para ganar puntos de inversión o perderlos si fallas.`
+  },
+  icon_acertijo_sal: {
+    id: 'icon_acertijo_sal',
+    title: 'Misión y Acertijo: Era 2 Sal y Cauri',
+    eraName: 'Acertijo 2',
+    icon: '🧩',
+    color: '#06b6d4',
+    durationEstimateSeconds: 20,
+    text: `Misión y Acertijo de la Era dos: La sal marina pura y las conchas de cauri. ¿Por qué este dinero mercancía superó a los bienes perecederos? Responde con precisión para sumar puntos a tu fondo de inversión.`
+  },
+  icon_acertijo_lidia: {
+    id: 'icon_acertijo_lidia',
+    title: 'Misión y Acertijo: Era 3 Moneda de Lidia',
+    eraName: 'Acertijo 3',
+    icon: '🧩',
+    color: '#eab308',
+    durationEstimateSeconds: 20,
+    text: `Misión y Acertijo de la Era tres: El Sello del León de Lidia. ¿Qué gran problema comercial resolvió estampar un peso y pureza oficial en una moneda de metal? ¡Demuestra tu conocimiento para ganar puntos!`
+  },
+  icon_acertijo_digital: {
+    id: 'icon_acertijo_digital',
+    title: 'Misión y Acertijo: Era 4 El Bit Digital',
+    eraName: 'Acertijo 4',
+    icon: '🧩',
+    color: '#d946ef',
+    durationEstimateSeconds: 20,
+    text: `Misión y Acertijo de la Era cuatro: En la frontera digital, el valor reside en la escasez verificable y el consenso. ¿Cómo viaja el valor sin depender de un soporte físico? Responde y domina la era digital.`
+  },
+  icon_inversion_trueque: {
+    id: 'icon_inversion_trueque',
+    title: 'Inversiones de la Era 1: Trueque',
+    eraName: 'Inversión 1',
+    icon: '💰',
+    color: '#f59e0b',
+    durationEstimateSeconds: 17,
+    text: `Centro de Inversiones de la Era uno: Invierte los puntos que has ganado en herramientas de cobre forjado y graneros comunales para multiplicar tu capacidad de intercambio y flujo pasivo.`
+  },
+  icon_inversion_sal: {
+    id: 'icon_inversion_sal',
+    title: 'Inversiones de la Era 2: Sal & Cauri',
+    eraName: 'Inversión 2',
+    icon: '💰',
+    color: '#06b6d4',
+    durationEstimateSeconds: 17,
+    text: `Centro de Inversiones de la Era dos: Invierte tus puntos en caravanas salineras y depósitos seguros de conchas de cauri para generar rendimientos constantes en tu portafolio.`
+  },
+  icon_inversion_lidia: {
+    id: 'icon_inversion_lidia',
+    title: 'Inversiones de la Era 3: Moneda Acuñada',
+    eraName: 'Inversión 3',
+    icon: '💰',
+    color: '#eab308',
+    durationEstimateSeconds: 17,
+    text: `Centro de Inversiones de la Era tres: Invierte tus puntos en hornos de fundición de electro y flotas comerciales para cobrar dividendos del comercio de ultramar.`
+  },
+  icon_inversion_digital: {
+    id: 'icon_inversion_digital',
+    title: 'Inversiones de la Era 4: Nodos & Blockchain',
+    eraName: 'Inversión 4',
+    icon: '💰',
+    color: '#d946ef',
+    durationEstimateSeconds: 17,
+    text: `Centro de Inversiones de la Era cuatro: Invierte tus puntos en nodos validadores y contratos inteligentes para construir tu imperio de activos digitales.`
+  },
+  icon_personaje_kai: {
+    id: 'icon_personaje_kai',
+    title: 'Kai: Mentor Temporal',
+    eraName: 'Guía de Aventuras',
+    icon: '🧑‍🚀',
+    color: '#00f3ff',
+    durationEstimateSeconds: 14,
+    text: `Kai te dice: ¡El dinero es una tecnología de confianza y coordinación social! Si no comprendes su historia, serás esclavo de la deuda.`
+  },
+  icon_personaje_lia: {
+    id: 'icon_personaje_lia',
+    title: 'Lia: Guardiana del Valor',
+    eraName: 'Estratega Financiera',
+    icon: '👩‍💻',
+    color: '#d946ef',
+    durationEstimateSeconds: 14,
+    text: `Lia te aconseja: ¡La riqueza no se mide por lo que gastas, sino por los activos productivos que pones en tu columna izquierda en cada era!`
+  },
+  icon_marcador_puntos: {
+    id: 'icon_marcador_puntos',
+    title: 'Marcador de Puntos de Inversión',
+    eraName: 'Fondo de Puntos',
+    icon: '🏆',
+    color: '#fbbf24',
+    durationEstimateSeconds: 15,
+    text: `Marcador de Puntos: Cada respuesta acertada te suma puntos para realizar transacciones de inversión. Las respuestas erradas te restan puntos. ¡Cuida tu saldo!`
+  },
   bancos: {
     id: 'bancos',
     title: 'Distrito Bancario: Bóvedas, Depósitos & Apalancamiento',
@@ -137,6 +273,33 @@ export const NARRATION_STORIES: Record<string, NarrationTrack> = {
     color: '#10b981',
     durationEstimateSeconds: 150,
     text: `El Viaje del Valor: De la Sal al Bit. Por ircar rojas. Capítulo uno: El Mercado del Trueque. Hace miles de años, el comercio dependía de que dos personas quisieran exactamente lo que la otra ofrecía. Kai jalaba una cabra y Lia buscaba trigo, pero la doble coincidencia hacía del trueque un rompecabezas sin fin. Capítulo dos: La Sal y el Cauri. Para solucionar la carga, nacieron las conchas de cauri y los saquitos de sal pura, el primer salario que permitió llevar el valor de una cabra en la palma de la mano. Capítulo tres: La Moneda de Lidia. En la forja real, Darío estampó el sello del león sobre el electro de oro y plata, creando la moneda estandarizada que eliminó las balanzas y unió los puertos del mundo. Capítulo cuatro: El Ciberespacio y el Bit. Hoy, el dinero ha evolucionado hacia la información pura: bits, claves criptográficas y redes de blockchain que transmiten valor a la velocidad de la luz. El secreto final que Kai y Lia aprendieron es este: el valor nunca estuvo en el objeto físico, sino en la confianza humana y en la sabiduría de construir activos productivos para tu futuro.`
+  },
+  login_fase0: {
+    id: 'login_fase0',
+    title: 'Fase 0: Registro e Ingreso al Ecosistema Unificado',
+    eraName: 'CifraFlow Financiero',
+    icon: '♾️',
+    color: '#00f3ff',
+    durationEstimateSeconds: 16,
+    text: `¡Hola, estudiante! Te damos la bienvenida a CifraFlow Financiero, la plataforma interactiva de simulación que integra Comprensión Lectora, Primera Cuenta Bancaria, Emprendimiento, Bolsa de Valores de Caracas y Ciberseguridad Real. Por favor, ingresa tu Nombre de Estudiante, Cédula de Identidad e Institución Educativa para registrar tu credencial e iniciar tu misión.`
+  },
+  game_over_reto: {
+    id: 'game_over_reto',
+    title: 'Transición entre Retos',
+    eraName: 'Fin de Reto',
+    icon: '🏁',
+    color: '#34d399',
+    durationEstimateSeconds: 5,
+    text: `GAME OVER. Fin de este reto, vamos al siguiente.`
+  },
+  fin_mision: {
+    id: 'fin_mision',
+    title: 'Evaluación Final: Fin de la Misión',
+    eraName: 'Certificado Digital',
+    icon: '🏆',
+    color: '#fbbf24',
+    durationEstimateSeconds: 12,
+    text: `¡Misión completada! Has superado con éxito la totalidad de los retos en CifraFlow Financiero. Consulta tu tarjeta de puntuación general y tu Certificado Digital de Competencias.`
   }
 };
 
@@ -206,6 +369,8 @@ class NarratorEngine {
   private currentPhraseIndex: number = 0;
   private phraseTimeout: number | null = null;
   private keepAliveInterval: number | null = null;
+  private onTrackCompleteCallback: (() => void) | null = null;
+  private fallbackTimer: number | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -387,9 +552,17 @@ class NarratorEngine {
   public play(trackKey: string, forcePlay: boolean = true) {
     const track = NARRATION_STORIES[trackKey];
     if (!track) return;
+    this.playTrack(track);
+  }
 
+  /**
+   * Play any custom or dynamic NarrationTrack directly, immediately stopping prior speech
+   */
+  public playTrack(track: NarrationTrack, onComplete?: () => void) {
+    // 1. Stop any currently playing speech immediately
     this.stop();
 
+    this.onTrackCompleteCallback = onComplete || null;
     this.currentTrack = track;
     this.isAllAudioPaused = false;
     this.isSpeaking = true;
@@ -404,9 +577,75 @@ class NarratorEngine {
     this.phraseQueue = splitIntoHumanPhrases(smoothedText);
     this.currentPhraseIndex = 0;
 
+    // Safety fallback timer if speech synthesis stalls or finishes without firing onend
+    if (onComplete) {
+      const estimatedSec = Math.max(5, Math.ceil(track.text.length / 10) + 3);
+      this.fallbackTimer = window.setTimeout(() => {
+        if (this.onTrackCompleteCallback) {
+          const cb = this.onTrackCompleteCallback;
+          this.onTrackCompleteCallback = null;
+          cb();
+        }
+      }, estimatedSec * 1000);
+    }
+
     this.startKeepAlive();
     this.speakNextPhrase();
     this.notify();
+  }
+
+  /**
+   * Suspends any ongoing speech immediately and starts the narration for the clicked icon
+   */
+  public playIconNarration(iconKey: string, custom?: string | Partial<NarrationTrack>, onComplete?: () => void) {
+    // 1. Stop any currently playing speech immediately
+    this.stop();
+
+    const existing = NARRATION_STORIES[iconKey];
+    if (existing) {
+      this.playTrack(existing, onComplete);
+      return;
+    }
+
+    if (typeof custom === 'string') {
+      const dynamicTrack: NarrationTrack = {
+        id: iconKey,
+        title: 'Elemento de la Era',
+        eraName: 'El Viaje del Valor',
+        icon: '🔊',
+        color: '#00f3ff',
+        durationEstimateSeconds: Math.max(8, Math.ceil(custom.length / 14)),
+        text: custom
+      };
+      this.playTrack(dynamicTrack, onComplete);
+    } else if (custom && custom.text) {
+      const dynamicTrack: NarrationTrack = {
+        id: iconKey,
+        title: custom.title || 'Elemento de la Era',
+        eraName: custom.eraName || 'El Viaje del Valor',
+        icon: custom.icon || '🔊',
+        color: custom.color || '#00f3ff',
+        durationEstimateSeconds: custom.durationEstimateSeconds || Math.max(8, Math.ceil(custom.text.length / 14)),
+        text: custom.text
+      };
+      this.playTrack(dynamicTrack, onComplete);
+    }
+  }
+
+  /**
+   * Reads a story paragraph, scene, or quote out loud immediately on click.
+   * Suspends any ongoing narration and reads the clicked text.
+   */
+  public readCuentoSection(sectionId: string, text: string, title: string = 'Lectura del Cuento', eraName: string = 'El Viaje del Valor') {
+    this.playIconNarration(sectionId, {
+      id: sectionId,
+      title,
+      eraName,
+      icon: '📖',
+      color: '#00f3ff',
+      durationEstimateSeconds: Math.ceil(text.length / 15),
+      text
+    });
   }
 
   /**
@@ -417,12 +656,26 @@ class NarratorEngine {
 
     if (this.currentPhraseIndex >= this.phraseQueue.length) {
       // Completed full track
+      if (this.fallbackTimer) {
+        clearTimeout(this.fallbackTimer);
+        this.fallbackTimer = null;
+      }
       this.isSpeaking = false;
       this.isPaused = false;
       this.progressPercent = 100;
       this.stopAmbientSoundscape();
       this.stopKeepAlive();
       this.notify();
+
+      if (this.onTrackCompleteCallback) {
+        const cb = this.onTrackCompleteCallback;
+        this.onTrackCompleteCallback = null;
+        try {
+          cb();
+        } catch (err) {
+          console.warn('onTrackCompleteCallback execution error:', err);
+        }
+      }
       return;
     }
 
@@ -505,6 +758,11 @@ class NarratorEngine {
       clearTimeout(this.phraseTimeout);
       this.phraseTimeout = null;
     }
+    if (this.fallbackTimer) {
+      clearTimeout(this.fallbackTimer);
+      this.fallbackTimer = null;
+    }
+    this.onTrackCompleteCallback = null;
     this.stopKeepAlive();
     if (this.synth) {
       this.synth.cancel();

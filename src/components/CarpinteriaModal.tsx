@@ -50,15 +50,24 @@ export const CarpinteriaModal: React.FC = () => {
               <Play className="w-4 h-4 text-amber-300 fill-amber-300 drop-shadow" />
             </div>
           </button>
-          <div>
-            <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-950/80 text-amber-400 border border-amber-500/40">
                 ETAPA 1: EMPRENDIMIENTO & VALOR TANGIBLE
               </span>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
+                +75 Pts Inversión por Construcción
+              </span>
+              <button
+                onClick={() => openModal('contador_inversion')}
+                className="ml-auto text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 font-semibold transition-all"
+              >
+                Ver Conteo Inversión
+              </button>
             </div>
             <h2 className="text-xl md:text-2xl font-black text-white mt-1">Taller de Carpintería Financiera de Mateo</h2>
             <p className="text-xs text-slate-300">
-              Transforma materias primas en bienes de alto valor agregado con engranajes, madera y diseño. Obtén tu capital de trabajo inicial.
+              Transforma materias primas en bienes de alto valor agregado. Cada construcción otorga +75 Puntos de Inversión y +$35 de valor acumulado.
             </p>
           </div>
         </div>
@@ -125,9 +134,10 @@ export const CarpinteriaModal: React.FC = () => {
                     onClick={() => craftProduct(prod.id)}
                     disabled={cash < prod.costToMake}
                     className="py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow"
+                    title="Fabricar insumo: Otorga +75 Puntos de Inversión y +$35 de valor tangible"
                   >
                     <Hammer className="w-3.5 h-3.5" />
-                    Fabricar (${prod.costToMake})
+                    Fabricar (+75 Pts / ${prod.costToMake})
                   </button>
 
                   <button

@@ -135,9 +135,34 @@ export interface BalanceSheetItem {
   placedInSlot: 'activos_circulantes' | 'activos_fijos' | 'pasivos_corto' | 'pasivos_largo' | 'capital_social' | null;
 }
 
-export type ArchetypeId = 'streamer' | 'coder' | 'designer' | 'barista';
+export type ArchetypeId = 'jorge' | 'ircar' | 'ivan' | 'carlos' | 'streamer' | 'coder' | 'designer' | 'barista';
 
-export type GameFlowState = 'login' | 'character_creation' | 'transition' | 'map_gameplay';
+export type GameFlowState = 
+  | 'login'                  // FASE 0: Registro e Ingreso General
+  | 'character_creation'     // FASE 1: Selección Cinematográfica de Avatares Adolescentes
+  | 'module_selection'       // FASE 2: Selección de Módulos / Campaña
+  | 'transition'             // Transición de Eras
+  | 'map_gameplay'           // FASE 3: Gameplay & Retos
+  | 'game_over_challenge'    // FASE 4: Game Over de Reto
+  | 'mission_complete';      // FASE 5: Evaluación Final & Certificado
+
+export type TextScale = 'small' | 'normal' | 'large' | 'xlarge';
+
+export interface BcvRateInfo {
+  rate: number;
+  valueDate: string;
+  updateHour: string;
+  lastChecked: number;
+  isLive: boolean;
+  source?: string;
+  sourceUrl?: string;
+}
+
+export interface StudentData {
+  name: string;
+  cedula: string;
+  institution: string;
+}
 
 export interface StarterRelic {
   id: string;
@@ -151,6 +176,8 @@ export interface StarterRelic {
 
 export interface PlayerProfile {
   name: string;
+  cedula?: string;
+  institution?: string;
   email?: string;
   title: string;
   archetypeId: ArchetypeId;
@@ -176,5 +203,102 @@ export interface CharacterArchetype {
     innovacion: number;
     resiliencia: number;
   };
+}
+
+export interface InvestmentEvent {
+  id: string;
+  timestamp: number;
+  type: 'answer_gain' | 'answer_loss' | 'attack_gain' | 'attack_loss' | 'build_gain' | 'build_loss' | 'invest_gain';
+  category: 'respuestas' | 'ataque' | 'construccion' | 'inversion';
+  title: string;
+  description: string;
+  deltaPoints: number;
+  deltaCash: number;
+}
+
+export interface InvestmentLedger {
+  investmentFund: number; // Fondo acumulado disponible para invertir
+  totalInvestmentPoints: number; // Puntos netos acumulados de inversión
+  stats: {
+    answers: {
+      correctCount: number;
+      wrongCount: number;
+      pointsGained: number;
+      pointsLost: number;
+    };
+    attacks: {
+      hitsCount: number;
+      villainsDefeatedCount: number;
+      pointsGained: number;
+      pointsLost: number;
+    };
+    construction: {
+      craftedCount: number;
+      pointsGained: number;
+      pointsLost: number;
+    };
+    investments: {
+      totalInvestedCash: number;
+      stocksBoughtCount: number;
+      projectsFundedCount: number;
+      passiveReturnGenerated: number;
+    };
+  };
+  recentEvents: InvestmentEvent[];
+}
+
+export interface QuizOption {
+  id: string;
+  letter: 'A' | 'B' | 'C';
+  text: string;
+  isCorrect: boolean;
+  explanation: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  era: MoneyEra;
+  title: string;
+  question: string;
+  options: QuizOption[];
+  affirmativeOption?: {
+    text: string;
+    isCorrect: boolean;
+    explanation: string;
+  };
+  negativeOption?: {
+    text: string;
+    isCorrect: boolean;
+    explanation: string;
+  };
+  pointsReward: number;
+  pointsPenalty: number;
+  cashReward: number;
+  cashPenalty: number;
+  answered?: boolean;
+  selectedOptionIndex?: number;
+  selectedOptionId?: string;
+  wasCorrect?: boolean;
+}
+
+export interface FloatingScoreEvent {
+  id: string;
+  text: string;
+  deltaPoints: number;
+  deltaCash?: number;
+  type: 'gain' | 'loss';
+  category: 'respuestas' | 'ataque' | 'construccion' | 'inversion';
+}
+
+export interface EraInvestmentAsset {
+  id: string;
+  era: MoneyEra;
+  title: string;
+  icon: string;
+  costPoints: number;
+  passivePointsYield: number;
+  cashBonus: number;
+  description: string;
+  purchasedCount: number;
 }
 

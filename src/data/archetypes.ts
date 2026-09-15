@@ -4,16 +4,22 @@ import coderImg from '../assets/images/teen_coder_gaming_1787494317270.jpg';
 import designerImg from '../assets/images/teen_designer_gaming_1787494329065.jpg';
 import baristaImg from '../assets/images/teen_barista_gaming_1787494350744.jpg';
 import cifraflowLogoImg from '../assets/images/cifraflow_infinity_logo_1787494363682.jpg';
+import teamBannerImg from '../assets/images/cifraflow_team_banner_1789388401447.jpg';
+import jorgeAvatarImg from '../assets/images/avatar_jorge_teen_1789388420816.jpg';
+import ircarAvatarImg from '../assets/images/avatar_ircar_teen_1789388437008.jpg';
+import ivanAvatarImg from '../assets/images/avatar_ivan_teen_1789388450607.jpg';
+import carlosAvatarImg from '../assets/images/avatar_carlos_teen_1789388475451.jpg';
 
 export const CIFRAFLOW_LOGO = cifraflowLogoImg;
+export const CIFRAFLOW_TEAM_BANNER = teamBannerImg;
 
 export const PLAYER_TITLES = [
-  'Viajero del Tiempo Cuántico',
-  'Buscador de Valor Ancestral',
-  'Alquimista Digital del Flujo',
-  'Navegante de la Sal & Cauri',
-  'Forjador del León de Lidia',
-  'Arquitecto de Blockchain'
+  'Cyber-Cadete CifraFlow',
+  'Operador Táctico de Nómina',
+  'Especialista Cloud & Anti-Gastos',
+  'Auditor Forense de Contratos',
+  'Estratega de Portafolios 50/30/20',
+  'Viajero del Tiempo Cuántico'
 ];
 
 export const STARTER_RELICS: StarterRelic[] = [
@@ -57,71 +63,71 @@ export const STARTER_RELICS: StarterRelic[] = [
 
 export const ARCHETYPES: CharacterArchetype[] = [
   {
-    id: 'streamer',
-    name: 'Kai Streamer',
-    role: 'Creador de Contenido & Streamer Gen-Z',
-    age: '19 años',
-    image: streamerImg,
-    description: 'Equipado con audífonos gamer con acentos neón, sudadera streetwear y setup dual-monitor RGB con paneles acústicos.',
-    passiveBonusTitle: 'Audiencia Digital & Viralidad',
-    passiveBonusDescription: '+20% de bonificación en recompensas por misiones y monetización acelerada de activos.',
-    primaryColor: '#00f2fe',
-    accentColor: '#d946ef',
-    stats: {
-      flujo: 85,
-      innovacion: 90,
-      resiliencia: 80,
-    }
-  },
-  {
-    id: 'coder',
-    name: 'Lia Coder',
-    role: 'Desarrolladora Junior Full-Stack',
-    age: '20 años',
-    image: coderImg,
-    description: 'Lentes con reflejos de líneas de código en cian, sudadera minimalista, teclado mecánico y monitor curvo ultrawide.',
-    passiveBonusTitle: 'Optimización de Algoritmos',
-    passiveBonusDescription: '+25% de velocidad en minado de bits blockchain y automatización de procesos contables.',
-    primaryColor: '#00f2fe',
-    accentColor: '#06b6d4',
-    stats: {
-      flujo: 80,
-      innovacion: 98,
-      resiliencia: 88,
-    }
-  },
-  {
-    id: 'designer',
-    name: 'Maya UI/UX',
-    role: 'Diseñadora Gráfica & Artista Digital',
-    age: '21 años',
-    image: designerImg,
-    description: 'Stylus digital iluminado, tableta gráfica con paletas de color neón, moño desenfadado y chaqueta oversize moderna.',
-    passiveBonusTitle: 'Valor Agregado de Marca',
-    passiveBonusDescription: '+20% de margen de ganancia al forjar y vender productos tangibles en todas las eras.',
-    primaryColor: '#d946ef',
-    accentColor: '#ec4899',
+    id: 'jorge',
+    name: 'Jorge (Adolescente)',
+    role: 'Operador Táctico de Accesos & Nómina',
+    age: '16 años',
+    image: jorgeAvatarImg,
+    description: 'Joven estudiante adolescente con cabello castaño oscuro, chaqueta cyber-cadete con circuitos luminosos y una interfaz táctica de pulso de alta precisión.',
+    passiveBonusTitle: '+15% Efectividad Finanzas & Blindaje FIDO2',
+    passiveBonusDescription: 'Bonificación del +15% de efectividad en depósitos bancarios, control de nómina y resistencia máxima contra intentos de suplantación de identidad.',
+    primaryColor: '#00f3ff',
+    accentColor: '#0284c7',
     stats: {
       flujo: 90,
-      innovacion: 92,
-      resiliencia: 82,
+      innovacion: 88,
+      resiliencia: 92,
     }
   },
   {
-    id: 'barista',
-    name: 'Leo Barista',
-    role: 'Barista de Especialidad & Cloud Kitchen',
-    age: '22 años',
-    image: baristaImg,
-    description: 'Delantal de mezclilla con pines esmaltados, arte latte recién elaborado y máquina de espresso con vapor holográfico.',
-    passiveBonusTitle: 'Flujo de Caja Recurrente',
-    passiveBonusDescription: '+15% de flujo pasivo constante por tick derivado de alta rotación diaria y fidelidad de clientes.',
-    primaryColor: '#f59e0b',
-    accentColor: '#00f2fe',
+    id: 'ircar',
+    name: 'Ircar (Adolescente)',
+    role: 'Especialista Cloud & Optimización Financiera',
+    age: '16 años',
+    image: ircarAvatarImg,
+    description: 'Joven femenina estudiante adolescente muy glamorosa con lentes sobre la cabeza, sudadera tecnológica con glow fucsia y visor holográfico de microfinanzas.',
+    passiveBonusTitle: 'Radar Anti-Gastos & Escudo Cloud',
+    passiveBonusDescription: 'Detecta de forma instantánea suscripciones hormiga y gastos fantasmas, reduciendo los costos fijos un 20% y blindando fondos en la nube.',
+    primaryColor: '#ff007f',
+    accentColor: '#d946ef',
     stats: {
-      flujo: 95,
-      innovacion: 80,
-      resiliencia: 92,
+      flujo: 92,
+      innovacion: 95,
+      resiliencia: 89,
+    }
+  },
+  {
+    id: 'ivan',
+    name: 'Iván (Adolescente)',
+    role: 'Auditor Forense Digital & Detective de Contratos',
+    age: '17 años',
+    image: ivanAvatarImg,
+    description: 'Joven estudiante adolescente con visor de realidad virtual y monóculo scanner de código que descompone términos y condiciones bancarias en milisegundos.',
+    passiveBonusTitle: 'Monóculo Scanner de Cláusulas Abusivas',
+    passiveBonusDescription: 'Evita penalizaciones por letra chica en contratos bancarios, desarmando fraudes y triplicando puntos en lectura crítica.',
+    primaryColor: '#34d399',
+    accentColor: '#059669',
+    stats: {
+      flujo: 85,
+      innovacion: 96,
+      resiliencia: 94,
+    }
+  },
+  {
+    id: 'carlos',
+    name: 'Carlos (Adolescente)',
+    role: 'Estratega Presupuestario & Emprendimiento',
+    age: '17 años',
+    image: carlosAvatarImg,
+    description: 'Joven estudiante adolescente de brazos cruzados con chaqueta con líneas luminosas doradas, proyectando tablets holográficas de portafolios de inversión.',
+    passiveBonusTitle: 'Reactor 50/30/20 & Portafolios de Inversión',
+    passiveBonusDescription: 'Optimiza la distribución de capital (50% necesidades, 30% deseos, 20% inversión), incrementando dividendos en la Bolsa de Caracas (BVC).',
+    primaryColor: '#fbbf24',
+    accentColor: '#d97706',
+    stats: {
+      flujo: 94,
+      innovacion: 89,
+      resiliencia: 95,
     }
   }
 ];

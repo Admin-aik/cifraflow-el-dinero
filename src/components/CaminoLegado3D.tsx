@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { soundFx } from '../utils/audio';
+import { narratorEngine } from '../utils/narrator';
 import { GAME_IMAGES } from '../data/gameAssets';
 import { ARCHETYPES } from '../data/archetypes';
 import { 
@@ -51,10 +52,10 @@ const COMIC_BUILDINGS: ComicBuilding[] = [
     subtitle: 'Kai, la Cabra Inquieta & La Doble Coincidencia',
     category: 'trueque',
     imageKey: 'trueque',
-    x: -340,
-    y: 160,
-    width: 240,
-    height: 190,
+    x: -360,
+    y: 110,
+    width: 250,
+    height: 195,
     color: '#f59e0b',
     accentColor: '#fbbf24',
     badge: 'ERA 1 • TRUEQUE',
@@ -69,10 +70,10 @@ const COMIC_BUILDINGS: ComicBuilding[] = [
     subtitle: 'Lia, Conchas de Cauri & El Primer Salario',
     category: 'sal_cauri',
     imageKey: 'salCauri',
-    x: 320,
-    y: 180,
-    width: 240,
-    height: 190,
+    x: -120,
+    y: -90,
+    width: 250,
+    height: 195,
     color: '#06b6d4',
     accentColor: '#22d3ee',
     badge: 'ERA 2 • SAL & CAURI',
@@ -87,10 +88,10 @@ const COMIC_BUILDINGS: ComicBuilding[] = [
     subtitle: 'El Yunque de Dario & Sello del León de Electro',
     category: 'forja_lidia',
     imageKey: 'forjaLidia',
-    x: -300,
-    y: -190,
-    width: 240,
-    height: 190,
+    x: 120,
+    y: 110,
+    width: 250,
+    height: 195,
     color: '#eab308',
     accentColor: '#fde047',
     badge: 'ERA 3 • MONEDA',
@@ -105,107 +106,16 @@ const COMIC_BUILDINGS: ComicBuilding[] = [
     subtitle: 'Kai & Lia en la Red Invisible de Datos',
     category: 'red_digital',
     imageKey: 'bitBlockchain',
-    x: 320,
-    y: -190,
-    width: 240,
-    height: 190,
+    x: 360,
+    y: -90,
+    width: 250,
+    height: 195,
     color: '#d946ef',
     accentColor: '#f0abfc',
     badge: 'ERA 4 • BLOCKCHAIN',
     icon: '⚡',
     modalTarget: 'red_digital',
     isPassiveAsset: true
-  },
-  {
-    id: 'bldg_carpinteria',
-    name: 'Taller de Carpintería de Mateo',
-    eraName: 'Activos Físicos',
-    subtitle: 'Engranajes, Madera & Fabricación Tangible',
-    category: 'carpinteria',
-    imageKey: 'carpinteria',
-    x: -110,
-    y: 300,
-    width: 230,
-    height: 185,
-    color: '#f97316',
-    accentColor: '#fdba74',
-    badge: 'TALLER 3D',
-    icon: '🪵',
-    modalTarget: 'carpinteria',
-    isPassiveAsset: true
-  },
-  {
-    id: 'bldg_bancos',
-    name: 'Bóveda Bancaria & Distrito de Liquidez',
-    eraName: 'Custodia & Crédito',
-    subtitle: 'BDV • Banco Plaza • Banco del Tesoro',
-    category: 'banco',
-    imageKey: 'bancoCentral',
-    x: -20,
-    y: -290,
-    width: 230,
-    height: 185,
-    color: '#ef4444',
-    accentColor: '#fca5a5',
-    badge: 'BANCOS',
-    icon: '🏛️',
-    modalTarget: 'bancos',
-    isPassiveAsset: true
-  },
-  {
-    id: 'bldg_bolsa',
-    name: 'Bolsa de Valores & Flotas BVC',
-    eraName: 'Mercado de Capitales',
-    subtitle: 'Acciones con Dividendos Pasivos BVC',
-    category: 'bolsa',
-    imageKey: 'bolsaCaracas',
-    x: 140,
-    y: 300,
-    width: 230,
-    height: 185,
-    color: '#10b981',
-    accentColor: '#6ee7b7',
-    badge: 'BOLSA BVC',
-    icon: '📈',
-    modalTarget: 'bolsa',
-    isPassiveAsset: true
-  },
-  {
-    id: 'bldg_vivero',
-    name: 'Vivero de Ideas & Hoja de Balance 3D',
-    eraName: 'Academia Contable',
-    subtitle: 'Activos = Pasivos + Patrimonio',
-    category: 'vivero',
-    imageKey: 'mentors',
-    x: -430,
-    y: 0,
-    width: 230,
-    height: 185,
-    color: '#8b5cf6',
-    accentColor: '#c4b5fd',
-    badge: 'ACADEMIA',
-    icon: '⚖️',
-    modalTarget: 'vivero',
-    isPassiveAsset: true
-  },
-  {
-    id: 'bldg_defensa',
-    name: 'Bastión de Defensa Anti-Fraude',
-    eraName: 'Seguridad Financiera',
-    subtitle: 'Caza-Fricción & Monstruos de Gasto Fijo',
-    category: 'defensa',
-    imageKey: 'inflation',
-    x: 440,
-    y: 0,
-    width: 230,
-    height: 185,
-    color: '#f43f5e',
-    accentColor: '#fda4af',
-    badge: 'DEFENSA 3D',
-    icon: '🛡️',
-    modalTarget: 'defensa',
-    isPassiveAsset: false,
-    isLiabilityThreat: true
   }
 ];
 
@@ -373,19 +283,19 @@ export const CaminoLegado3D: React.FC = () => {
   // DRAW GLOWING TIMELINE HIGHWAYS CONNECTING ERAS
   const drawTimelineHighways = (ctx: CanvasRenderingContext2D, tick: number) => {
     const eraCoords = [
-      { x: -340, y: 160 }, // Era 1: Trueque
-      { x: 320, y: 180 },  // Era 2: Sal & Cauri
-      { x: -300, y: -190 },// Era 3: Forja Lidia
-      { x: 320, y: -190 }  // Era 4: Bit Digital
+      { x: -360, y: 110 }, // Era 1: Trueque
+      { x: -120, y: -90 }, // Era 2: Sal & Cauri
+      { x: 120, y: 110 },  // Era 3: Forja Lidia
+      { x: 360, y: -90 }   // Era 4: Bit Digital
     ];
 
     ctx.save();
     // Flowing neon energy path
     ctx.beginPath();
     ctx.moveTo(eraCoords[0].x, eraCoords[0].y);
-    ctx.bezierCurveTo(0, 240, 100, 220, eraCoords[1].x, eraCoords[1].y);
-    ctx.bezierCurveTo(150, 0, -150, 0, eraCoords[2].x, eraCoords[2].y);
-    ctx.bezierCurveTo(0, -260, 150, -240, eraCoords[3].x, eraCoords[3].y);
+    ctx.bezierCurveTo(-260, 0, -200, -50, eraCoords[1].x, eraCoords[1].y);
+    ctx.bezierCurveTo(0, -90, 0, 110, eraCoords[2].x, eraCoords[2].y);
+    ctx.bezierCurveTo(240, 110, 260, -90, eraCoords[3].x, eraCoords[3].y);
 
     ctx.strokeStyle = 'rgba(234,179,8,0.35)';
     ctx.lineWidth = 12;
@@ -652,6 +562,18 @@ export const CaminoLegado3D: React.FC = () => {
   const handleClick = () => {
     if (hoveredBuilding) {
       soundFx.playClick();
+      const eraKey = hoveredBuilding.id === 'bldg_trueque' ? 'icon_era_trueque'
+        : hoveredBuilding.id === 'bldg_sal_cauri' ? 'icon_era_sal_cauri'
+        : hoveredBuilding.id === 'bldg_forja_lidia' ? 'icon_era_forja_lidia'
+        : 'icon_era_red_digital';
+
+      narratorEngine.playIconNarration(eraKey, {
+        title: hoveredBuilding.name,
+        eraName: hoveredBuilding.eraName,
+        icon: hoveredBuilding.icon,
+        text: `${hoveredBuilding.name}. ${hoveredBuilding.subtitle}. Haz clic para responder el acertijo de la era o realizar transacciones de inversión con puntos.`
+      });
+
       openModal(hoveredBuilding.modalTarget);
     }
   };

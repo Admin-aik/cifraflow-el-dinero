@@ -19,7 +19,8 @@ export const PortalTransicionEras: React.FC = () => {
     playerTitle, 
     archetypeId, 
     selectedRelic, 
-    startMapGameplay 
+    startMapGameplay,
+    goBack 
   } = useGameStore();
 
   const [countdown, setCountdown] = useState(4);
@@ -58,18 +59,39 @@ export const PortalTransicionEras: React.FC = () => {
       {/* CENTER HOLOGRAPHIC TIME-PORTAL CARD */}
       <div className="relative z-10 w-full max-w-xl bg-slate-900/90 backdrop-blur-2xl border border-cyan-500/40 rounded-3xl p-6 sm:p-8 text-center shadow-[0_0_60px_rgba(0,242,254,0.3)]">
         
-        {/* LOGO & STEP BADGE */}
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg overflow-hidden border border-cyan-400 shadow-md">
-            <img 
-              src={CIFRAFLOW_LOGO} 
-              alt="Logo" 
-              referrerPolicy="no-referrer"
-              className="w-full h-full object-cover" 
-            />
-          </div>
-          <span className="text-xs font-mono uppercase tracking-widest text-cyan-400">
-            Nexo Temporal • Salto de Época
+        {/* LOGO & STEP BADGE WITH CIFRAFLOW LOGO BACK TRIGGER */}
+        <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-800">
+          <button
+            id="btn-cifraflow-portal-back"
+            onClick={() => {
+              soundFx.playClick();
+              goBack();
+            }}
+            className="group flex items-center gap-2.5 p-1 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-cyan-400 text-slate-300 hover:text-white transition-all cursor-pointer hover:scale-105"
+            title="Haz clic en el logotipo de CifraFlow para volver a la pantalla anterior"
+          >
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-cyan-400/60 group-hover:border-cyan-300 bg-slate-950 p-0.5 shadow-[0_0_12px_rgba(0,242,254,0.3)] shrink-0">
+              <img 
+                src={CIFRAFLOW_LOGO} 
+                alt="CifraFlow Logo - Volver" 
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="text-left">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-white group-hover:text-cyan-300">
+                  CIFRAFLOW
+                </span>
+                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-semibold group-hover:border-cyan-300">
+                  Volver Atrás
+                </span>
+              </div>
+            </div>
+          </button>
+
+          <span className="text-xs font-mono uppercase tracking-widest text-cyan-400 text-right">
+            Nexo Temporal • Salto
           </span>
         </div>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '../store/EstadoJuego';
 import { GAME_IMAGES } from '../data/gameAssets';
+import { CIFRAFLOW_LOGO } from '../data/archetypes';
 import { narratorEngine } from '../utils/narrator';
 import { soundFx } from '../utils/audio';
 import { 
@@ -88,6 +89,36 @@ export const MercadoTruequeModal: React.FC = () => {
         {/* HEADER */}
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
+            {/* CIFRAFLOW LOGO AS RETURN BUTTON */}
+            <button
+              id="btn-cifraflow-trueque-back"
+              onClick={() => {
+                soundFx.playClick();
+                closeModal();
+              }}
+              className="group flex items-center gap-2 p-1 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-cyan-400 text-slate-300 hover:text-white transition-all cursor-pointer hover:scale-105 shrink-0 mr-1"
+              title="Haz clic en el logotipo de CifraFlow para volver al mapa"
+            >
+              <div className="w-9 h-9 rounded-xl overflow-hidden border border-cyan-400/60 group-hover:border-cyan-300 bg-slate-950 p-0.5 shadow-[0_0_10px_rgba(0,242,254,0.3)] shrink-0">
+                <img 
+                  src={CIFRAFLOW_LOGO} 
+                  alt="CifraFlow Logo - Volver" 
+                  referrerPolicy="no-referrer"
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+              <div className="text-left hidden sm:block pr-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-black text-white group-hover:text-cyan-300">
+                    CIFRAFLOW
+                  </span>
+                  <span className="text-[8px] font-mono px-1 py-0.2 rounded bg-cyan-950 border border-cyan-500/40 text-cyan-300 font-semibold">
+                    Volver
+                  </span>
+                </div>
+              </div>
+            </button>
+
             {/* CLICKABLE 3D ILLUSTRATION WITH NARRATION TRIGGER */}
             <button
               onClick={() => {
